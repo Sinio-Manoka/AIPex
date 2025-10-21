@@ -2,18 +2,22 @@ export const models = [
   {
     name: "deepseek-3.2",
     value: "deepseek-chat",
+    provider: "DeepSeek",
   },
   {
     name: "claude-4-sonnet",
     value: "claude-sonnet-4-20250514",
+    provider: "Claude",
   },
   {
     name: "claude-4.5-sonnet",
     value: "claude-sonnet-4-5-20250929",
+    provider: "Claude",
   },
   {
     name: "gpt-5",
     value: "gpt-5",
+    provider: "OpenAI",
   },
 ];
 

@@ -53,9 +53,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+} from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { ChatStatus } from "ai";
-import { ClockIcon, CopyIcon, RefreshCcwIcon, SettingsIcon, PlusIcon, LayersIcon, FileTextIcon, SearchIcon, DollarSignIcon, GlobeIcon, BookmarkIcon, ClipboardIcon, CameraIcon, FileIcon } from "lucide-react";
+import { ClockIcon, CopyIcon, RefreshCcwIcon, SettingsIcon, PlusIcon, LayersIcon, FileTextIcon, SearchIcon, DollarSignIcon, GlobeIcon, BookmarkIcon, ClipboardIcon, CameraIcon, FileIcon, BotIcon, CheckIcon } from "lucide-react";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { models, SYSTEM_PROMPT } from "./constants";
 import { MessageHandler, type MessageHandlerConfig } from "./message-handler";
@@ -187,6 +196,30 @@ const ChatBot = () => {
   const [aiHost, setAiHost, isLoadingHost] = useStorage("aiHost", import.meta.env.VITE_AI_HOST || "https://api.openai.com/v1/chat/completions");
   const [aiToken, setAiToken, isLoadingToken] = useStorage("aiToken", import.meta.env.VITE_AI_TOKEN);
   const [aiModel, setAiModel, isLoadingModel] = useStorage("aiModel", import.meta.env.VITE_AI_MODEL || "deepseek-chat");
+  const [isModelButtonHovered, setIsModelButtonHovered] = useState(false);
+  const [selectedModelName, setSelectedModelName] = useState("");
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+
+  // Update selected model name when aiModel changes
+  useEffect(() => {
+    const currentModel = models.find(model => model.value === aiModel);
+    if (currentModel) {
+      setSelectedModelName(currentModel.name);
+    }
+  }, [aiModel]);
+
+  // Keyboard shortcut for CommandDialog
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsCommandOpen((open) => !open);
+      }
+    };
+
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   // Settings dialog state
   const [showSettings, setShowSettings] = useState(false);
@@ -580,25 +613,37 @@ const ChatBot = () => {
                   <PromptInputActionAddAttachments />
                 </PromptInputActionMenuContent>
               </PromptInputActionMenu>
-              <PromptInputModelSelect
-                onValueChange={(value) => {
-                  if (value && value.trim()) {
-                    setAiModel(value);
-                  }
-                }}
-                value={aiModel}
+              <Button
+                variant="ghost"
+                size="sm"
+                className={cn(
+                  "relative overflow-hidden transition-all duration-300 ease-out",
+                  "text-muted-foreground hover:text-foreground",
+                  "bg-transparent hover:bg-accent",
+                  "border border-transparent hover:border-border",
+                  "min-w-[40px] w-auto",
+                  isModelButtonHovered || selectedModelName
+                    ? "px-3"
+                    : "px-2"
+                )}
+                onMouseEnter={() => setIsModelButtonHovered(true)}
+                onMouseLeave={() => setIsModelButtonHovered(false)}
+                onClick={() => setIsCommandOpen(true)}
               >
-                <PromptInputModelSelectTrigger>
-                  <PromptInputModelSelectValue />
-                </PromptInputModelSelectTrigger>
-                <PromptInputModelSelectContent>
-                  {models.map((model) => (
-                    <PromptInputModelSelectItem key={model.value} value={model.value}>
-                      {model.name}
-                    </PromptInputModelSelectItem>
-                  ))}
-                </PromptInputModelSelectContent>
-              </PromptInputModelSelect>
+                <div className="flex items-center gap-2 transition-all duration-300">
+                  <BotIcon className="size-4 flex-shrink-0" />
+                  <span
+                    className={cn(
+                      "transition-all duration-300 overflow-hidden whitespace-nowrap",
+                      isModelButtonHovered || selectedModelName
+                        ? "max-w-[120px] opacity-100"
+                        : "max-w-0 opacity-0"
+                    )}
+                  >
+                    {selectedModelName || "models"}
+                  </span>
+                </div>
+              </Button>
             </PromptInputTools>
             {(() => {
               const submitStatus: ChatStatus | undefined =
@@ -701,6 +746,45 @@ const ChatBot = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Command Dialog for Model Selection */}
+      <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
+        <CommandInput placeholder="Search models..." />
+        <CommandList>
+          <CommandEmpty>No models found.</CommandEmpty>
+          {/* Group models by provider */}
+          {Array.from(new Set(models.map(model => model.provider))).map(provider => (
+            <CommandGroup key={provider} heading={provider}>
+              {models
+                .filter(model => model.provider === provider)
+                .map(model => (
+                  <CommandItem
+                    key={model.value}
+                    value={model.name}
+                    onSelect={() => {
+                      setAiModel(model.value);
+                      setSelectedModelName(model.name);
+                      setIsCommandOpen(false);
+                    }}
+                    className={cn(
+                      "cursor-pointer",
+                      aiModel === model.value && "bg-accent"
+                    )}
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{model.name}</span>
+                      {aiModel === model.value && (
+                        <div className="flex items-center justify-center w-5 h-5 rounded-full bg-muted">
+                          <CheckIcon className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+            </CommandGroup>
+          ))}
+        </CommandList>
+      </CommandDialog>
     </div>
   );
 };
