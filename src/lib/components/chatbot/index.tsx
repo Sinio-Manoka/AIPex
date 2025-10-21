@@ -1077,11 +1077,8 @@ const ChatBot = () => {
 
       {/* Command Dialog for Provider and Model Selection */}
       <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
-        <CommandInput
-          placeholder="Search providers..."
-          className="border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
-        />
-        <CommandList className="max-h-[300px] overflow-y-auto">
+        <CommandInput placeholder="Search providers..." />
+        <CommandList>
           <CommandEmpty className="py-6 text-center text-sm">
             No providers found.
           </CommandEmpty>
@@ -1091,10 +1088,10 @@ const ChatBot = () => {
             <CommandGroup heading={`Manage ${showProviderOptions}`} className="p-1">
               <CommandItem
                 onSelect={() => handleModifyKey(showProviderOptions)}
-                className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+                className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground"
               >
                 <div className="flex items-center gap-2">
-                  <Icon name="edit" size="sm" />
+                  <Icon name="edit" size="xs" />
                   Modify API Key
                 </div>
               </CommandItem>
@@ -1103,14 +1100,14 @@ const ChatBot = () => {
                 className="cursor-pointer rounded-sm px-2 py-1.5 text-sm text-destructive aria-selected:bg-destructive/10 aria-selected:text-destructive"
               >
                 <div className="flex items-center gap-2">
-                  <Icon name="trash" size="sm" />
+                  <Icon name="trash" size="xs" className="text-destructive" />
                   Delete API Key
                 </div>
               </CommandItem>
-              <CommandSeparator />
-              <CommandItem onSelect={handleBackFromOptions} className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground">
+              <CommandSeparator className="mb-1 mt-1" />
+              <CommandItem onSelect={handleBackFromOptions} className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground">
                 <div className="flex items-center gap-2">
-                  <Icon name="chevronLeft" size="sm" />
+                  <Icon name="chevronLeft" size="xs" />
                   Back to providers
                 </div>
               </CommandItem>
@@ -1133,7 +1130,7 @@ const ChatBot = () => {
                     key={provider.name}
                     value={provider.name}
                     onSelect={() => handleProviderSelect(provider.name)}
-                    className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+                    className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground"
                   >
                     <div className="flex items-center justify-between w-full">
                       <span>{provider.name}</span>
@@ -1231,8 +1228,8 @@ const ChatBot = () => {
                     value={model}
                     onSelect={() => handleModelSelect(model)}
                     className={cn(
-                      "cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground",
-                      aiModel === model && "bg-accent"
+                      "cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground",
+                      aiModel === model && "bg-accent/50"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
@@ -1253,10 +1250,10 @@ const ChatBot = () => {
                 </CommandItem>
               )}
 
-              <CommandSeparator />
-              <CommandItem onSelect={handleBackToProviders} className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground">
+              <CommandSeparator className="mb-1 mt-1" />
+              <CommandItem onSelect={handleBackToProviders} className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground">
                 <div className="flex items-center gap-2">
-                  <Icon name="chevronLeft" size="sm" />
+                  <Icon name="chevronLeft" size="xs" />
                   Back to providers
                 </div>
               </CommandItem>
