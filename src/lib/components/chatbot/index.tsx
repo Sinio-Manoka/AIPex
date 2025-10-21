@@ -64,7 +64,7 @@ import {
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import type { ChatStatus } from "ai";
-import { ClockIcon, CopyIcon, RefreshCcwIcon, SettingsIcon, PlusIcon, LayersIcon, FileTextIcon, SearchIcon, DollarSignIcon, GlobeIcon, BookmarkIcon, ClipboardIcon, CameraIcon, FileIcon, BotIcon, CheckIcon } from "lucide-react";
+import { Icon, getContextIcon, getSuggestionIcon } from "~/lib/components/ui/icon";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { models, SYSTEM_PROMPT } from "./constants";
 import { MessageHandler, type MessageHandlerConfig } from "./message-handler";
@@ -89,24 +89,6 @@ const formatToolOutput = (output: any) => {
   `;
 };
 
-// Get icon for context type
-const getContextIcon = (contextType: string) => {
-  const iconProps = { className: "size-4" };
-  switch (contextType) {
-    case "page":
-      return <GlobeIcon {...iconProps} />;
-    case "tab":
-      return <FileIcon {...iconProps} />;
-    case "bookmark":
-      return <BookmarkIcon {...iconProps} />;
-    case "clipboard":
-      return <ClipboardIcon {...iconProps} />;
-    case "screenshot":
-      return <CameraIcon {...iconProps} />;
-    default:
-      return <FileTextIcon {...iconProps} />;
-  }
-};
 
 // Welcome screen component
 const WelcomeScreen = ({ onSuggestionClick }: { onSuggestionClick: (text: string) => void }) => {
@@ -114,28 +96,20 @@ const WelcomeScreen = ({ onSuggestionClick }: { onSuggestionClick: (text: string
 
   const suggestions = [
     {
-      icon: LayersIcon,
+      type: "organizeTabs",
       text: t("welcome.organizeTabs"),
-      iconColor: "text-blue-600",
-      bgColor: "bg-blue-100",
     },
     {
-      icon: FileTextIcon,
+      type: "analyzePage",
       text: t("welcome.analyzePage"),
-      iconColor: "text-green-600",
-      bgColor: "bg-green-100",
     },
     {
-      icon: SearchIcon,
+      type: "research",
       text: t("welcome.research"),
-      iconColor: "text-purple-600",
-      bgColor: "bg-purple-100",
     },
     {
-      icon: DollarSignIcon,
+      type: "comparePrice",
       text: t("welcome.comparePrice"),
-      iconColor: "text-orange-600",
-      bgColor: "bg-orange-100",
     },
   ];
 
@@ -153,7 +127,7 @@ const WelcomeScreen = ({ onSuggestionClick }: { onSuggestionClick: (text: string
       <div className="w-full max-w-2xl">
         <Suggestions className="grid gap-3 sm:gap-4 sm:grid-cols-2 w-full">
           {suggestions.map((suggestion, index) => {
-            const Icon = suggestion.icon;
+            const iconConfig = getSuggestionIcon(suggestion.type);
             return (
               <Suggestion
                 key={index}
@@ -168,8 +142,8 @@ const WelcomeScreen = ({ onSuggestionClick }: { onSuggestionClick: (text: string
                 )}
               >
                 <div className="flex items-center gap-3 w-full">
-                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", suggestion.bgColor)}>
-                    <Icon className={cn("w-5 h-5", suggestion.iconColor)} />
+                  <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", iconConfig.bgColor)}>
+                    <Icon name={iconConfig.icon as any} className={cn("w-5 h-5", iconConfig.color)} />
                   </div>
                   <div className="text-xs text-left text-gray-700 dark:text-gray-300 flex-1 line-clamp-2 break-words whitespace-normal">
                     {suggestion.text}
@@ -466,7 +440,7 @@ const ChatBot = () => {
           onClick={handleOpenSettings}
           className="gap-2"
         >
-          <SettingsIcon className="size-4" />
+          <Icon name="settings" size="sm" variant="muted" />
           {t("common.settings")}
         </Button>
         <div className="text-sm font-medium">{t("common.title")}</div>
@@ -476,7 +450,7 @@ const ChatBot = () => {
           onClick={handleNewChat}
           className="gap-2"
         >
-          <PlusIcon className="size-4" />
+          <Icon name="plus" size="sm" variant="muted" />
           {t("common.newChat")}
         </Button>
       </div>
@@ -518,10 +492,10 @@ const ChatBot = () => {
                             {message.role === "assistant" && isLastMessage && (
                               <Actions className="mt-2">
                                 <Action onClick={() => handleRegenerate()} label="Retry">
-                                  <RefreshCcwIcon className="size-3" />
+                                  <Icon name="refresh" size="xs" variant="muted" />
                                 </Action>
                                 <Action onClick={() => handleCopy(part.text)} label="Copy">
-                                  <CopyIcon className="size-3" />
+                                  <Icon name="copy" size="xs" variant="muted" />
                                 </Action>
                               </Actions>
                             )}
@@ -654,7 +628,7 @@ const ChatBot = () => {
             {/* Queue indicator */}
             {messageQueue.length > 0 && (
               <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground bg-muted/50 rounded-md mt-2">
-                <ClockIcon className="size-4" />
+                <Icon name="clock" size="sm" variant="muted" />
                 <span>
                   {messageQueue.length} message{messageQueue.length > 1 ? "s" : ""} queued
                 </span>
@@ -687,7 +661,7 @@ const ChatBot = () => {
                 onClick={() => setIsCommandOpen(true)}
               >
                 <div className="flex items-center gap-2 transition-all duration-300">
-                  <BotIcon className="size-4 flex-shrink-0" />
+                  <Icon name="bot" size="sm" variant="muted" />
                   <span
                     className={cn(
                       "transition-all duration-300 overflow-hidden whitespace-nowrap",
@@ -701,17 +675,24 @@ const ChatBot = () => {
                 </div>
               </Button>
             </PromptInputTools>
-            {(() => {
-              const submitStatus: ChatStatus | undefined =
-                status === "idle" ? undefined : (status as ChatStatus);
-              return (
-                <PromptInputSubmit
-                  disabled={!input && !submitStatus}
-                  status={submitStatus}
-                  onClick={status === "streaming" ? handleStop : undefined}
-                />
-              );
-            })()}
+            <Button
+              type="submit"
+              size="sm"
+              disabled={!input && status === "idle"}
+              onClick={status === "streaming" ? handleStop : undefined}
+              className={cn(
+                "transition-all duration-200 rounded-full aspect-square w-8 h-8 p-0 flex items-center justify-center",
+                status === "streaming"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+              )}
+            >
+              {status === "streaming" ? (
+                <Icon name="x" size="sm" className="text-current" />
+              ) : (
+                <Icon name="chevronUp" size="sm" className="text-current" />
+              )}
+            </Button>
           </PromptInputToolbar>
         </PromptInput>
       </div>
@@ -962,7 +943,7 @@ const ChatBot = () => {
                       <span>{model.name}</span>
                       {aiModel === model.value && (
                         <div className="flex items-center justify-center w-5 h-5 rounded-full bg-muted">
-                          <CheckIcon className="w-3 h-3 text-muted-foreground" />
+                          <Icon name="check" size="xs" variant="muted" />
                         </div>
                       )}
                     </div>
