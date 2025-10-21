@@ -1,0 +1,22 @@
+{
+    "providers": [
+        {
+            "name": "Deepseek",
+            "url": "https://api.deepseek.com",
+            "api_key_required": true,
+            "endpoints": {
+                "chat": "/chat/completions",
+                "models": "/models"
+            }
+        },
+        {
+            "name": "Openai",
+            "url": "https://api.openai.com/v1",
+            "api_key_required": true,
+            "endpoints": {
+                "chat": "/chat/completions",
+                "models": "/models"
+            }
+        }
+    ]
+}

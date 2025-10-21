@@ -21,7 +21,8 @@
     "build/",
     "README.md",
     "package.json",
-    "host-access-config.json"
+    "host-access-config.json",
+    "providers.json"
   ],
   "dependencies": {
     "@ant-design/x": "^1.4.0",

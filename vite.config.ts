@@ -19,6 +19,10 @@ export default defineConfig({
         {
           src: 'host-access-config.json',
           dest: '.'
+        },
+        {
+          src: 'providers.json',
+          dest: '.'
         }
       ]
     })

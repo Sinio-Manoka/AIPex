@@ -46,6 +46,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Select,
   SelectContent,
@@ -80,6 +82,7 @@ import type { Language } from "~/lib/i18n/types";
 import { useTheme, type Theme } from "~/lib/hooks/use-theme";
 import { useTabsSync } from "~/lib/hooks/use-tabs-sync";
 import { hostAccessManager, type HostAccessMode, type HostAccessConfig } from "~/lib/services/host-access-manager";
+import { providerManager, type ProviderWithKey } from "~/lib/services/provider-manager";
 
 const formatToolOutput = (output: any) => {
   return `
@@ -175,6 +178,36 @@ const ChatBot = () => {
   const [selectedModelName, setSelectedModelName] = useState("");
   const [isCommandOpen, setIsCommandOpen] = useState(false);
 
+  // Provider management state
+  const [providers, setProviders] = useState<ProviderWithKey[]>([]);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(true);
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [providerApiKey, setProviderApiKey] = useState("");
+  const [isAddingKey, setIsAddingKey] = useState(false);
+  const [isFetchingModels, setIsFetchingModels] = useState(false);
+  const [providerModels, setProviderModels] = useState<string[]>([]);
+  const [providerError, setProviderError] = useState<string | null>(null);
+  const [showProviderOptions, setShowProviderOptions] = useState<string | null>(null);
+
+
+  // Load providers on mount
+  useEffect(() => {
+    const loadProviders = async () => {
+      try {
+        setIsLoadingProviders(true);
+        await providerManager.loadProviders();
+        const providersWithKeys = providerManager.getProvidersWithKeys();
+        setProviders(providersWithKeys);
+      } catch (error) {
+        console.error("Failed to load providers:", error);
+      } finally {
+        setIsLoadingProviders(false);
+      }
+    };
+
+    loadProviders();
+  }, []);
+
   // Update selected model name when aiModel changes
   useEffect(() => {
     const currentModel = models.find(model => model.value === aiModel);
@@ -195,6 +228,7 @@ const ChatBot = () => {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, []);
+
 
   // Settings dialog state
   const [showSettings, setShowSettings] = useState(false);
@@ -402,6 +436,132 @@ const ChatBot = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  // Provider management functions
+  const handleProviderSelect = async (providerName: string) => {
+    const provider = providers.find(p => p.name === providerName);
+    if (!provider) return;
+
+    if (provider.apiKey) {
+      // Provider has API key, fetch models
+      setSelectedProvider(providerName);
+      setIsFetchingModels(true);
+      setProviderError(null);
+
+      try {
+        const models = await providerManager.fetchModels(providerName);
+        setProviderModels(models);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to fetch models";
+        if (errorMessage.includes("401") || errorMessage.includes("unauthorized") || errorMessage.includes("authentication")) {
+          setProviderError("Invalid API token. Please check your API key and try again.");
+        } else {
+          setProviderError(errorMessage);
+        }
+        setProviderModels([]);
+      } finally {
+        setIsFetchingModels(false);
+      }
+    } else {
+      // No API key, show key input
+      setSelectedProvider(providerName);
+      setIsAddingKey(true);
+      setProviderApiKey("");
+      setProviderError(null);
+    }
+  };
+
+  const handleAddApiKey = async () => {
+    if (!selectedProvider || !providerApiKey.trim()) return;
+
+    setIsFetchingModels(true);
+    setProviderError(null);
+
+    try {
+      // Save API key
+      await providerManager.saveProviderKey(selectedProvider, providerApiKey.trim());
+
+      // Refresh providers list
+      const updatedProviders = providerManager.getProvidersWithKeys();
+      setProviders(updatedProviders);
+
+      // Fetch models with the new key
+      const models = await providerManager.fetchModels(selectedProvider);
+      setProviderModels(models);
+      setIsAddingKey(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to add API key";
+      if (errorMessage.includes("401") || errorMessage.includes("unauthorized") || errorMessage.includes("authentication")) {
+        setProviderError("Invalid API token. Please check your API key and try again.");
+      } else {
+        setProviderError(errorMessage);
+      }
+    } finally {
+      setIsFetchingModels(false);
+    }
+  };
+
+  const handleDeleteApiKey = async (providerName: string) => {
+    try {
+      await providerManager.deleteProviderKey(providerName);
+
+      // Refresh providers list
+      const updatedProviders = providerManager.getProvidersWithKeys();
+      setProviders(updatedProviders);
+
+      // Reset state if this was the selected provider
+      if (selectedProvider === providerName) {
+        setSelectedProvider(null);
+        setProviderModels([]);
+        setIsAddingKey(false);
+      }
+    } catch (error) {
+      console.error("Failed to delete API key:", error);
+    }
+  };
+
+  const handleModelSelect = (modelId: string) => {
+    if (!selectedProvider) return;
+
+    // Set the AI model and close the dialog
+    setAiModel(modelId);
+    setSelectedModelName(modelId);
+    setIsCommandOpen(false);
+
+    // Reset provider selection state
+    setSelectedProvider(null);
+    setProviderModels([]);
+    setIsAddingKey(false);
+    setProviderError(null);
+  };
+
+  const handleBackToProviders = () => {
+    setSelectedProvider(null);
+    setProviderModels([]);
+    setIsAddingKey(false);
+    setProviderError(null);
+  };
+
+  const handleCogwheelClick = (e: React.MouseEvent, providerName: string) => {
+    e.stopPropagation();
+    setShowProviderOptions(providerName);
+  };
+
+  const handleDeleteKey = (providerName: string) => {
+    handleDeleteApiKey(providerName);
+    setShowProviderOptions(null);
+  };
+
+  const handleModifyKey = (providerName: string) => {
+    setSelectedProvider(providerName);
+    setIsAddingKey(true);
+    setProviderApiKey("");
+    setShowProviderOptions(null);
+  };
+
+  const handleBackFromOptions = () => {
+    setShowProviderOptions(null);
   };
 
   const addToWhitelist = () => {
@@ -915,42 +1075,193 @@ const ChatBot = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Command Dialog for Model Selection */}
+      {/* Command Dialog for Provider and Model Selection */}
       <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
-        <CommandInput placeholder="Search models..." />
-        <CommandList>
-          <CommandEmpty>No models found.</CommandEmpty>
-          {/* Group models by provider */}
-          {Array.from(new Set(models.map(model => model.provider))).map(provider => (
-            <CommandGroup key={provider} heading={provider}>
-              {models
-                .filter(model => model.provider === provider)
-                .map(model => (
+        <CommandInput
+          placeholder="Search providers..."
+          className="border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+        />
+        <CommandList className="max-h-[300px] overflow-y-auto">
+          <CommandEmpty className="py-6 text-center text-sm">
+            No providers found.
+          </CommandEmpty>
+
+          {/* Show provider options when cogwheel is clicked */}
+          {showProviderOptions && (
+            <CommandGroup heading={`Manage ${showProviderOptions}`} className="p-1">
+              <CommandItem
+                onSelect={() => handleModifyKey(showProviderOptions)}
+                className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="edit" size="sm" />
+                  Modify API Key
+                </div>
+              </CommandItem>
+              <CommandItem
+                onSelect={() => handleDeleteKey(showProviderOptions)}
+                className="cursor-pointer rounded-sm px-2 py-1.5 text-sm text-destructive aria-selected:bg-destructive/10 aria-selected:text-destructive"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="trash" size="sm" />
+                  Delete API Key
+                </div>
+              </CommandItem>
+              <CommandSeparator />
+              <CommandItem onSelect={handleBackFromOptions} className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground">
+                <div className="flex items-center gap-2">
+                  <Icon name="chevronLeft" size="sm" />
+                  Back to providers
+                </div>
+              </CommandItem>
+            </CommandGroup>
+          )}
+
+          {/* Show provider list when no provider is selected and not showing options */}
+          {!selectedProvider && !isAddingKey && !showProviderOptions && (
+            <CommandGroup heading="AI Providers" className="p-1">
+              {isLoadingProviders ? (
+                <CommandItem disabled>
+                  <div className="flex items-center gap-2">
+                    <Icon name="refresh" size="sm" className="animate-spin" />
+                    Loading providers...
+                  </div>
+                </CommandItem>
+              ) : (
+                providers.map(provider => (
                   <CommandItem
-                    key={model.value}
-                    value={model.name}
-                    onSelect={() => {
-                      setAiModel(model.value);
-                      setSelectedModelName(model.name);
-                      setIsCommandOpen(false);
-                    }}
+                    key={provider.name}
+                    value={provider.name}
+                    onSelect={() => handleProviderSelect(provider.name)}
+                    className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground"
+                  >
+                    <div className="flex items-center justify-between w-full">
+                      <span>{provider.name}</span>
+                      <div className="flex items-center gap-2">
+                        {!provider.apiKey && provider.api_key_required && (
+                          <Badge
+                            variant="secondary"
+                            className="text-xs bg-blue-500 text-white dark:bg-blue-600"
+                          >
+                            Add New Key
+                          </Badge>
+                        )}
+                        {provider.apiKey && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => handleCogwheelClick(e, provider.name)}
+                            className="h-6 w-6 p-0 text-muted-foreground hover:text-destructive transition-all duration-200 hover:rotate-90"
+                          >
+                            <Icon name="settings" size="xs" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </CommandItem>
+                ))
+              )}
+            </CommandGroup>
+          )}
+
+          {/* Show API key input when adding key */}
+          {isAddingKey && selectedProvider && (
+            <CommandGroup heading={`Add API Key for ${selectedProvider}`} className="p-1">
+              <div className="px-2 py-1 space-y-2">
+                <Input
+                  type="password"
+                  placeholder="Enter API key..."
+                  value={providerApiKey}
+                  onChange={(e) => setProviderApiKey(e.target.value)}
+                  className="mb-2"
+                />
+                {providerError && (
+                  <Alert variant="destructive" className="mb-2">
+                    <AlertDescription>{providerError}</AlertDescription>
+                  </Alert>
+                )}
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleBackToProviders}
+                    className="flex-1"
+                  >
+                    Back
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleAddApiKey}
+                    disabled={!providerApiKey.trim() || isFetchingModels}
+                    className="flex-1"
+                  >
+                    {isFetchingModels ? (
+                      <Icon name="refresh" size="sm" className="animate-spin" />
+                    ) : (
+                      "Add Key"
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </CommandGroup>
+          )}
+
+          {/* Show models list when provider is selected and has models */}
+          {selectedProvider && !isAddingKey && (
+            <CommandGroup heading={`Models for ${selectedProvider}`} className="p-1">
+              {providerError && (
+                <div className="px-2 py-1">
+                  <Alert variant="destructive">
+                    <AlertDescription>{providerError}</AlertDescription>
+                  </Alert>
+                </div>
+              )}
+
+              {isFetchingModels ? (
+                <CommandItem disabled>
+                  <div className="flex items-center gap-2">
+                    <Icon name="refresh" size="sm" className="animate-spin" />
+                    Loading models...
+                  </div>
+                </CommandItem>
+              ) : providerModels.length > 0 ? (
+                providerModels.map(model => (
+                  <CommandItem
+                    key={model}
+                    value={model}
+                    onSelect={() => handleModelSelect(model)}
                     className={cn(
-                      "cursor-pointer",
-                      aiModel === model.value && "bg-accent"
+                      "cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground",
+                      aiModel === model && "bg-accent"
                     )}
                   >
                     <div className="flex items-center justify-between w-full">
-                      <span>{model.name}</span>
-                      {aiModel === model.value && (
+                      <span>{model}</span>
+                      {aiModel === model && (
                         <div className="flex items-center justify-center w-5 h-5 rounded-full bg-muted">
                           <Icon name="check" size="xs" variant="muted" />
                         </div>
                       )}
                     </div>
                   </CommandItem>
-                ))}
+                ))
+              ) : (
+                <CommandItem disabled>
+                  <div className="text-sm text-muted-foreground">
+                    No models available
+                  </div>
+                </CommandItem>
+              )}
+
+              <CommandSeparator />
+              <CommandItem onSelect={handleBackToProviders} className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground">
+                <div className="flex items-center gap-2">
+                  <Icon name="chevronLeft" size="sm" />
+                  Back to providers
+                </div>
+              </CommandItem>
             </CommandGroup>
-          ))}
+          )}
         </CommandList>
       </CommandDialog>
     </div>
