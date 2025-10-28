@@ -1,6 +1,6 @@
 # 🤖 AIPex - AI-Powered Browser Automation Extension
 
-> **Automate your browser with natural language commands - The open source browser-use solution**
+> **The Open Source ChatGPT Atlas - Automate your browser with natural language commands**
 
 <div align="right">
   <a href="README.md">🇺🇸 English</a> | <a href="README.zh-CN.md">🇨🇳 中文</a>
@@ -20,70 +20,54 @@
 [![Discord](https://img.shields.io/badge/Discord-7289DA?logo=discord&logoColor=white)](https://discord.gg/k3aSZS7m)
 
 <div align="center">
-  **⭐ Star this repo if you find it helpful! ⭐**
+  **⭐ The Open Source ChatGPT Atlas Alternative ⭐**
   
   [![Chrome Web Store](https://img.shields.io/badge/Install%20on%20Chrome%20Web%20Store-blue?logo=google-chrome&logoColor=white)](https://chromewebstore.google.com/detail/aipex-%E2%80%94%E2%80%94-tab-history-mana/iglkpadagfelcpmiidndgjgafpdifnke?hl=zh-CN&utm_source=ext_sidebar)
 </div>
 
 ## 🤖 What is AIPex?
 
-AIPex is a revolutionary Chrome extension that transforms your browser into an intelligent automation platform. Using **natural language commands** and **AI-powered intelligence**, AIPex can automate virtually any browser task - from complex multi-step workflows to simple repetitive actions.
+AIPex is the **open source alternative to ChatGPT Atlas** - a revolutionary Chrome extension that transforms your browser into an intelligent automation platform. Using **natural language commands** and **AI-powered intelligence**, AIPex can automate virtually any browser task - from complex multi-step workflows to simple repetitive actions.
+
+**🎯 Why choose AIPex over ChatGPT Atlas?**
+- ✅ **Free & Open Source** - No subscription fees, full transparency
+- ✅ **No Browser Migration** - Use your existing browser directly
+- ✅ **All Atlas Features** - Complete feature parity with additional capabilities
+- ✅ **Better Performance** - Optimized for speed and efficiency
 
 ## 📊 Comparison with Similar Projects
 
-### AIPex vs Dia/Comet vs Playwright-based Solutions
+### AIPex vs ChatGPT Atlas vs Dia/Comet vs Playwright-based Solutions
 
-| Feature | AIPex | Comet (Dia) | Playwright-based |
-|---------|-------|-------------|------------------|
-| **Setup & Resources** | ✅ One-click extension install, uses current browser | ⚠️ Install separate Dia browser | ❌ Launch browser + install dependencies |
-| **Session Reuse** | ✅ Auto-uses existing logins & settings | ✅ Preserves user environment | ❌ Clean environment, requires re-login |
-| **Ease of Use** | ✅ No technical knowledge needed | ⚠️ Adapt to new browser | ⚠️ Requires technical setup |
-| **Performance** | ✅ Fast, low LLM token cost | ✅ Fast, low token cost | ⚠️ Slower (IPC overhead, higher token cost) |
-| **Capabilities** | ✅ Full browser API, multi-tab support | ⚠️ Limited API, tab selection only | ⚠️ Limited to Playwright API |
-| **BYOK** | ✅ Yes | ❌ No | ✅ Yes |
+| Feature | AIPex | ChatGPT Atlas | Comet (Dia) | Playwright-based |
+|---------|-------|---------------|-------------|------------------|
+| **Pricing & Open Source** | ✅ Free and open source | ❌ Paid and closed source | ✅ Free and open source | ✅ Free and open source |
+| **Browser Migration Cost** | ✅ No migration needed, use existing browser | ❌ Requires browser migration | ⚠️ Install separate Dia browser | ❌ Launch browser + install dependencies |
+| **Setup & Resources** | ✅ One-click extension install, uses current browser | ❌ Requires browser migration | ⚠️ Install separate Dia browser | ❌ Launch browser + install dependencies |
+| **Session Reuse** | ✅ Auto-uses existing logins & settings | ✅ Preserves user environment | ✅ Preserves user environment | ❌ Clean environment, requires re-login |
+| **Ease of Use** | ✅ No technical knowledge needed | ⚠️ Adapt to new browser | ⚠️ Adapt to new browser | ⚠️ Requires technical setup |
+| **Performance** | ✅ Fast, low LLM token cost | ✅ Fast, low token cost | ✅ Fast, low token cost | ⚠️ Slower (IPC overhead, higher token cost) |
+| **Capabilities** | ✅ Full browser API, multi-tab support | ⚠️ Limited features | ⚠️ Limited API, tab selection only | ⚠️ Limited to Playwright API |
+| **Feature Coverage** | ✅ All Atlas features available | ⚠️ Multiple features implemented | ⚠️ Limited features | ⚠️ Limited features |
+| **BYOK** | ✅ Yes | ❌ No | ❌ No | ✅ Yes |
 
-### 🎯 Why Choose AIPex for Browser Automation?
+## 🚀 Do Amazing with AIPex
 
-- 🧠 **Natural Language Control**: Command your browser in plain English - no coding required
-- 🤖 **AI-Powered Intelligence**: 30+ MCP tools that understand context and adapt to your needs
-- ⚡ **Multi-Step Automation**: Execute complex workflows with single commands
-- 🔄 **Universal Compatibility**: Works with any website - no special setup needed
-- 📊 **Smart Data Extraction**: Automatically collect and organize information from web pages
-- 🎯 **Precision Actions**: Click, fill, scroll, and interact with elements using AI vision
-- 📝 **Form Automation**: Fill out forms, submit data, and handle complex interactions
-- 🖼️ **At Tabs**: Read & Act with Multiple tabs
-- 🔧 **Developer Friendly**: Open source with extensive API for custom automation
-- 🚀 **Lightning Fast**: Execute automation tasks in seconds, not minutes
+### 1. "Organize my tabs by topic"
 
-## ✨ Core Automation Features
+https://github.com/user-attachments/assets/4a4f2a64-691c-4783-965e-043b329a8035
 
-### 📊 Intelligent Data Extraction
-- **Smart Content Analysis**: Extract structured data from any webpage
-- **Price Monitoring**: Track prices across multiple e-commerce sites
-- **Research Automation**: Gather information from multiple sources automatically
+### 2. "Use google to research MCP"
 
-![Data Extraction](gif/research.gif)
+https://github.com/user-attachments/assets/71ec4efd-d80e-4e8f-8e39-88baee3ec38e
 
-### 🎯 Precision Element Interaction
-- **Visual Element Detection**: AI can see and interact with page elements
-- **Form Automation**: Fill out complex forms with intelligent field mapping
-- **Dynamic Content Handling**: Adapt to changing page layouts and content
+### 3. "write a twitter to say hello"
 
-![Element Interaction](gif/compare.gif)
+https://github.com/user-attachments/assets/81f6b482-84d0-4fd9-924b-dca634b208ec
 
-### 📝 Content Processing & Analysis
-- **Text Highlighting & Summarization**: Automatically highlight and summarize important content
-- **Document Processing**: Extract and organize information from web documents
-- **Smart Note-Taking**: Capture and organize insights from web browsing
+### 4. "please help me pass the exam"
 
-![Content Processing](gif/summariz.gif)
-
-### 🗂️ Advanced Tab & Window Management
-- **AI-Powered Organization**: Automatically group and organize tabs by topic
-- **Smart Tab Switching**: Find and switch between tabs using natural language
-- **Multi-Window Coordination**: Manage complex workflows across multiple browser windows
-
-![Tab Management](gif/organize-tabs.gif)
+https://github.com/user-attachments/assets/ba454715-c759-41df-bf87-e835f76be365
 
 ## 🚀 Getting Started
 
