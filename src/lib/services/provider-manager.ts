@@ -20,6 +20,15 @@ const providersConfig = {
         chat: "/chat/completions",
         models: "/models"
       }
+    },
+    {
+      name: "Anthropic",
+      url: "https://api.anthropic.com/v1",
+      api_key_required: true,
+      endpoints: {
+        chat: "/messages",  // Anthropic uses different endpoint
+        models: "/models"
+      }
     }
   ]
 };

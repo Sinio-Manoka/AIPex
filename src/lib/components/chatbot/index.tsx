@@ -36,14 +36,6 @@ import {
   ToolInput,
   ToolOutput,
 } from "@/components/ai-elements/tool";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -81,7 +73,6 @@ import { useTranslation, useLanguageChanger } from "~/lib/i18n/hooks";
 import type { Language } from "~/lib/i18n/types";
 import { useTheme, type Theme } from "~/lib/hooks/use-theme";
 import { useTabsSync } from "~/lib/hooks/use-tabs-sync";
-import { hostAccessManager, type HostAccessMode, type HostAccessConfig } from "~/lib/services/host-access-manager";
 import { providerManager, type ProviderWithKey } from "~/lib/services/provider-manager";
 
 const formatToolOutput = (output: any) => {
@@ -255,21 +246,6 @@ const ChatBot = () => {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-
-  // Settings dialog state
-  const [showSettings, setShowSettings] = useState(false);
-  const [tempAiHost, setTempAiHost] = useState("");
-  const [tempAiModel, setTempAiModel] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
-
-  // Host access configuration
-  const [hostAccessMode, setHostAccessMode] = useState<HostAccessMode>("include-all");
-  const [whitelist, setWhitelist] = useState<string[]>([]);
-  const [blocklist, setBlocklist] = useState<string[]>([]);
-  const [whitelistInput, setWhitelistInput] = useState("");
-  const [blocklistInput, setBlocklistInput] = useState("");
-  const [activeTab, setActiveTab] = useState("general");
-
   const placeholderList = [
     t("input.placeholder1"),
     t("input.placeholder2"),
@@ -415,56 +391,6 @@ const ChatBot = () => {
     }
     setMessages([]);
     setInput("");
-  };
-
-  // Load host access settings initially
-  useEffect(() => {
-    const loadHostAccessSettings = async () => {
-      try {
-        const config = await hostAccessManager.getConfig();
-        setHostAccessMode(config.mode);
-        setWhitelist(config.whitelist);
-        setBlocklist(config.blocklist);
-      } catch (e) {
-        console.error("Failed to load host access settings", e);
-      }
-    };
-    loadHostAccessSettings();
-  }, []);
-
-  const handleOpenSettings = () => {
-    setTempAiHost(aiHost || "");
-    setTempAiModel(aiModel || "");
-    setShowSettings(true);
-  };
-
-  const handleSaveSettings = async () => {
-    // Validate AI Model is not empty
-    if (!tempAiModel || !tempAiModel.trim()) {
-      console.error("AI Model cannot be empty!");
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      // Save AI settings
-      setAiHost(tempAiHost);
-      setAiModel(tempAiModel);
-
-      // Save host access settings
-      await hostAccessManager.updateConfig({
-        mode: hostAccessMode,
-        whitelist,
-        blocklist
-      });
-
-      setShowSettings(false);
-      console.log("All settings saved successfully");
-    } catch (error) {
-      console.error("Failed to save settings:", error);
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   // Provider management functions
@@ -641,28 +567,6 @@ const ChatBot = () => {
     setShowProviderOptions(null);
   };
 
-  const addToWhitelist = () => {
-    if (whitelistInput.trim() && !whitelist.includes(whitelistInput.trim())) {
-      setWhitelist([...whitelist, whitelistInput.trim()]);
-      setWhitelistInput("");
-    }
-  };
-
-  const removeFromWhitelist = (host: string) => {
-    setWhitelist(whitelist.filter(h => h !== host));
-  };
-
-  const addToBlocklist = () => {
-    if (blocklistInput.trim() && !blocklist.includes(blocklistInput.trim())) {
-      setBlocklist([...blocklist, blocklistInput.trim()]);
-      setBlocklistInput("");
-    }
-  };
-
-  const removeFromBlocklist = (host: string) => {
-    setBlocklist(blocklist.filter(h => h !== host));
-  };
-
   return (
     <div
       className={cn(
@@ -671,15 +575,38 @@ const ChatBot = () => {
     >
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleOpenSettings}
-          className="gap-2"
-        >
-          <Icon name="settings" size="sm" variant="muted" />
-          {t("common.settings")}
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Theme Toggle Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              const themes: Theme[] = ['light', 'dark', 'system'];
+              const currentIndex = themes.indexOf(theme || 'system');
+              const nextIndex = (currentIndex + 1) % themes.length;
+              setTheme(themes[nextIndex]);
+            }}
+            className="w-8 h-8 p-0 border-0 bg-transparent hover:bg-accent"
+            title={`Current theme: ${theme || 'system'}`}
+          >
+            <Icon
+              name={(theme || 'system') === 'dark' ? 'moon' : (theme || 'system') === 'light' ? 'sun' : 'monitor'}
+              size="sm"
+              variant="muted"
+            />
+          </Button>
+
+          {/* Language Selector Button */}
+          <Select value={language} onValueChange={(value) => changeLanguage(value as Language)}>
+            <SelectTrigger className="w-auto h-8 px-2 text-xs border-0 bg-transparent hover:bg-accent">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="en">{t("language.en")}</SelectItem>
+              <SelectItem value="zh">{t("language.zh")}</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
         <div className="text-sm font-medium">{t("common.title")}</div>
         <Button
           variant="ghost"
@@ -934,220 +861,7 @@ const ChatBot = () => {
         </PromptInput>
       </div>
 
-      {/* Settings Dialog */}
-      <Dialog open={showSettings} onOpenChange={setShowSettings}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>{t("settings.title")}</DialogTitle>
-            <DialogDescription>{t("settings.subtitle")}</DialogDescription>
-          </DialogHeader>
 
-          <div className="space-y-4">
-            {/* Tab Navigation */}
-            <div className="flex border-b">
-              <button
-                type="button"
-                onClick={() => setActiveTab("general")}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                  activeTab === "general"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                General
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab("security")}
-                className={cn(
-                  "px-4 py-2 text-sm font-medium border-b-2 transition-colors",
-                  activeTab === "security"
-                    ? "border-primary text-primary"
-                    : "border-transparent text-muted-foreground hover:text-foreground"
-                )}
-              >
-                Security
-              </button>
-            </div>
-
-            {/* General Tab Content */}
-            {activeTab === "general" && (
-              <div className="space-y-4 py-4">
-                {/* Language Selection */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("settings.language")}</label>
-                  <Select value={language} onValueChange={(value) => changeLanguage(value as Language)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="en">{t("language.en")}</SelectItem>
-                      <SelectItem value="zh">{t("language.zh")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Theme Selection */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("settings.theme")}</label>
-                  <Select value={theme} onValueChange={(value) => setTheme(value as Theme)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">{t("theme.light")}</SelectItem>
-                      <SelectItem value="dark">{t("theme.dark")}</SelectItem>
-                      <SelectItem value="system">{t("theme.system")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* AI Host */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("settings.aiHost")}</label>
-                  <Input
-                    value={tempAiHost}
-                    onChange={(e) => setTempAiHost(e.target.value)}
-                    placeholder={t("settings.hostPlaceholder")}
-                  />
-                </div>
-
-                {/* AI Model */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("settings.aiModel")}</label>
-                  <Input
-                    value={tempAiModel}
-                    onChange={(e) => setTempAiModel(e.target.value)}
-                    placeholder={t("settings.modelPlaceholder")}
-                  />
-                </div>
-
-                {/* Provider Management Info */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">API Keys</label>
-                  <p className="text-xs text-muted-foreground">
-                    Manage your API keys for different AI providers using the model selector button in the chat input.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Security Tab Content */}
-            {activeTab === "security" && (
-              <div className="space-y-4 py-4">
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold">Host Access Security</h3>
-
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Host Access Mode</label>
-                    <Select value={hostAccessMode} onValueChange={(value) => setHostAccessMode(value as HostAccessMode)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="include-all">Include All Hosts</SelectItem>
-                        <SelectItem value="whitelist">Whitelist Mode</SelectItem>
-                        <SelectItem value="blocklist">Blocklist Mode</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {hostAccessMode === "include-all" && "AI can access any website"}
-                      {hostAccessMode === "whitelist" && "AI can only access whitelisted hosts"}
-                      {hostAccessMode === "blocklist" && "AI cannot access blocklisted hosts"}
-                    </p>
-                  </div>
-
-                  {hostAccessMode === "whitelist" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Whitelist</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={whitelistInput}
-                          onChange={(e) => setWhitelistInput(e.target.value)}
-                          placeholder="example.com"
-                          onKeyPress={(e) => e.key === 'Enter' && addToWhitelist()}
-                        />
-                        <Button
-                          onClick={addToWhitelist}
-                          size="sm"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {whitelist.map((host, index) => (
-                          <div key={index} className="flex items-center justify-between bg-muted/50 px-3 py-2 rounded-md">
-                            <span className="text-sm">{host}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeFromWhitelist(host)}
-                              className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
-                            >
-                              ×
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {hostAccessMode === "blocklist" && (
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Blocklist</label>
-                      <div className="flex gap-2">
-                        <Input
-                          value={blocklistInput}
-                          onChange={(e) => setBlocklistInput(e.target.value)}
-                          placeholder="example.com"
-                          onKeyPress={(e) => e.key === 'Enter' && addToBlocklist()}
-                        />
-                        <Button
-                          onClick={addToBlocklist}
-                          size="sm"
-                        >
-                          Add
-                        </Button>
-                      </div>
-                      <div className="space-y-1 max-h-32 overflow-y-auto">
-                        {blocklist.map((host, index) => (
-                          <div key={index} className="flex items-center justify-between bg-muted/50 px-3 py-2 rounded-md">
-                            <span className="text-sm">{host}</span>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => removeFromBlocklist(host)}
-                              className="text-red-500 hover:text-red-700 h-6 w-6 p-0"
-                            >
-                              ×
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowSettings(false)}
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              onClick={handleSaveSettings}
-              disabled={isSaving}
-            >
-              {isSaving ? t("common.saving") : t("common.save")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       {/* Command Dialog for Provider and Model Selection */}
       <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
