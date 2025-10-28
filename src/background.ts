@@ -1,4 +1,5 @@
 import { Storage } from "~/lib/storage"
+import { providerManager } from "~/lib/services/provider-manager"
 
 // Asset URLs for extension resources
 const logoNotion = chrome.runtime.getURL("assets/logo-notion.png")
@@ -40,9 +41,16 @@ const activeStreams = new Map<string, AbortController>()
 
 // Check if AI grouping is available
 async function isAIGroupingAvailable() {
-  const storage = new Storage()
-  const aiToken = await storage.get("aiToken")
-  return !!aiToken
+  try {
+    const defaultProvider = providerManager.getDefaultProvider();
+    if (!defaultProvider) return false;
+
+    const aiToken = providerManager.getProviderKey(defaultProvider);
+    return !!aiToken;
+  } catch (error) {
+    console.error('Error checking AI grouping availability:', error);
+    return false;
+  }
 }
 
 // Todo List management functions
@@ -561,8 +569,20 @@ async function chatCompletion(messages: string | { role: string, content: string
     process.env.AI_HOST ||
     "https://api.openai.com/v1/chat/completions"
 
-  const aiToken = (await storage.get("aiToken")) ||
-    process.env.AI_TOKEN
+  // Use provider manager for token, fallback to legacy storage and env
+  let aiToken = null;
+  try {
+    const defaultProvider = providerManager.getDefaultProvider();
+    if (defaultProvider) {
+      aiToken = providerManager.getProviderKey(defaultProvider);
+    }
+  } catch (error) {
+    console.warn('Failed to get token from provider manager, falling back to legacy:', error);
+  }
+
+  if (!aiToken) {
+    aiToken = (await storage.get("aiToken")) || process.env.AI_TOKEN;
+  }
 
   const aiModel = (await storage.get("aiModel")) ||
     process.env.AI_MODEL ||

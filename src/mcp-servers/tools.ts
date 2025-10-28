@@ -1,4 +1,4 @@
-import { Storage } from "~/lib/storage"
+import { providerManager } from "~/lib/services/provider-manager"
 
 export type SimplifiedTab = {
   id: number
@@ -39,26 +39,25 @@ export async function switchToTab(tabId: number): Promise<{ success: true }> {
 
 // OpenAI chat completion helper (shared)
 export async function chatCompletion(messages: any, stream = false, options: any = {}) {
-  const storage = new Storage()
-  const aiHost = (await storage.get("aiHost")) || "https://api.openai.com/v1/chat/completions"
-  const aiToken = await storage.get("aiToken")
-  const aiModel = (await storage.get("aiModel")) || "gpt-3.5-turbo"
-  if (!aiToken) throw new Error("No OpenAI API token set")
-
-  let conversationMessages
-  if (typeof messages === "string") {
-    conversationMessages = [{ role: "user", content: messages.trim() }]
-  } else if (Array.isArray(messages)) {
-    // Ensure all message content is trimmed to prevent trailing whitespace errors
-    conversationMessages = messages.map(msg => ({
-      ...msg,
-      content: msg.content ? msg.content.trim() : msg.content
-    }))
-  } else {
-    throw new Error("Invalid messages format")
+  // Get default provider and token using ProviderManager
+  const defaultProvider = providerManager.getDefaultProvider();
+  if (!defaultProvider) {
+    throw new Error("No default provider configured");
   }
 
-  // Note: Current tab is now automatically included in referencedTabs, so no need for separate currentTabInfo
+  const aiToken = providerManager.getProviderKey(defaultProvider);
+  if (!aiToken) {
+    throw new Error("No API token set for default provider");
+  }
+
+  // Get provider config for URL
+  const provider = providerManager.getProviderByName(defaultProvider);
+  if (!provider) {
+    throw new Error(`Provider ${defaultProvider} not found`);
+  }
+
+  const aiHost = `${provider.url}${provider.endpoints.chat}`;
+  const aiModel = providerManager.getDefaultModel() || "gpt-3.5-turbo";
 
   const systemInstruction = [
     "You are the AIPex browser assistant. Respond in the same language as the user's input. Default to English if language is unclear.. Use tools when available and provide clear next steps when tools are not needed.",
@@ -109,6 +108,27 @@ export async function chatCompletion(messages: any, stream = false, options: any
     "\nUsage guidance: For requests like 'switch to X', first call get_all_tabs, pick the best-matching id, then call switch_to_tab. Use get_current_tab to understand context. Use organize_tabs to group, and ungroup_tabs to reset.",
     "\nEncourage natural, semantic requests instead of slash commands (e.g., 'help organize my tabs', 'switch to the bilibili tab', 'summarize this page', 'bookmark this page', 'search my history for github')."
   ].join("\n")
+
+  let conversationMessages
+  if (typeof messages === "string") {
+    conversationMessages = [
+      { role: "system", content: systemInstruction },
+      { role: "user", content: messages.trim() }
+    ]
+  } else if (Array.isArray(messages)) {
+    // Ensure all message content is trimmed to prevent trailing whitespace errors
+    conversationMessages = [
+      { role: "system", content: systemInstruction },
+      ...messages.map(msg => ({
+        ...msg,
+        content: msg.content ? msg.content.trim() : msg.content
+      }))
+    ]
+  } else {
+    throw new Error("Invalid messages format")
+  }
+
+  // Note: Current tab is now automatically included in referencedTabs, so no need for separate currentTabInfo
 
   const requestBody = {
     model: aiModel,

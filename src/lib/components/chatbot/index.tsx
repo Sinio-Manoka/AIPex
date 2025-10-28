@@ -172,11 +172,28 @@ const ChatBot = () => {
   const messageHandlerRef = useRef<MessageHandler | null>(null);
 
   const [aiHost, setAiHost, isLoadingHost] = useStorage("aiHost", import.meta.env.VITE_AI_HOST || "https://api.openai.com/v1/chat/completions");
-  const [aiToken, setAiToken, isLoadingToken] = useStorage("aiToken", import.meta.env.VITE_AI_TOKEN);
   const [aiModel, setAiModel, isLoadingModel] = useStorage("aiModel", import.meta.env.VITE_AI_MODEL || "deepseek-chat");
   const [isModelButtonHovered, setIsModelButtonHovered] = useState(false);
   const [selectedModelName, setSelectedModelName] = useState("");
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+
+  // Get current token based on selected provider
+  const getCurrentToken = (): string => {
+    if (selectedProvider) {
+      const token = providerManager.getProviderKey(selectedProvider) || "";
+      console.log("[getCurrentToken] Using selectedProvider token:", selectedProvider, token ? "present" : "empty");
+      return token;
+    }
+    // Fallback to default provider if no specific provider selected
+    const defaultProvider = providerManager.getDefaultProvider();
+    if (defaultProvider) {
+      const token = providerManager.getProviderKey(defaultProvider) || "";
+      console.log("[getCurrentToken] Using defaultProvider token:", defaultProvider, token ? "present" : "empty");
+      return token;
+    }
+    console.log("[getCurrentToken] No provider found, returning empty token");
+    return "";
+  };
 
   // Provider management state
   const [providers, setProviders] = useState<ProviderWithKey[]>([]);
@@ -208,13 +225,22 @@ const ChatBot = () => {
     loadProviders();
   }, []);
 
-  // Update selected model name when aiModel changes
+  // Update selected model name when aiModel changes or providers change
   useEffect(() => {
-    const currentModel = models.find(model => model.value === aiModel);
-    if (currentModel) {
-      setSelectedModelName(currentModel.name);
+    const defaultProvider = providerManager.getDefaultProvider();
+    const defaultModel = providerManager.getDefaultModel();
+
+    if (defaultProvider && defaultModel) {
+      const currentModel = models.find(model => model.value === defaultModel);
+      if (currentModel) {
+        setSelectedModelName(currentModel.name);
+      } else {
+        setSelectedModelName(defaultModel); // Fallback to model ID if name not found
+      }
+    } else {
+      setSelectedModelName(""); // Clear model name if no default provider
     }
-  }, [aiModel]);
+  }, [aiModel, providers]);
 
   // Keyboard shortcut for CommandDialog
   useEffect(() => {
@@ -233,7 +259,6 @@ const ChatBot = () => {
   // Settings dialog state
   const [showSettings, setShowSettings] = useState(false);
   const [tempAiHost, setTempAiHost] = useState("");
-  const [tempAiToken, setTempAiToken] = useState("");
   const [tempAiModel, setTempAiModel] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -258,8 +283,8 @@ const ChatBot = () => {
 
   // Initialize message handler ONCE on mount (wait for settings to load first)
   useEffect(() => {
-    // Wait for all settings to load from storage
-    if (isLoadingHost || isLoadingToken || isLoadingModel) {
+    // Wait for all settings to load from storage and providers
+    if (isLoadingHost || isLoadingModel || isLoadingProviders) {
       return;
     }
 
@@ -279,7 +304,7 @@ const ChatBot = () => {
         },
       })),
       initialAiHost: aiHost || "https://api.openai.com/v1/chat/completions",
-      initialAiToken: aiToken || "",
+      initialAiToken: getCurrentToken(),
       initialMessages: [{ role: "system", id: "system", parts: [{ type: "text", text: SYSTEM_PROMPT }] }],
     };
 
@@ -309,7 +334,7 @@ const ChatBot = () => {
     setMessages(messageHandlerRef.current.getMessages());
     setStatus(messageHandlerRef.current.getStatus());
     setMessageQueue(messageHandlerRef.current.getQueue());
-  }, [isLoadingHost, isLoadingToken, isLoadingModel, aiModel, aiHost, aiToken]); // ✅ 包含配置值但使用 ref 防止重复初始化
+  }, [isLoadingHost, isLoadingModel, isLoadingProviders, aiModel, aiHost, selectedProvider, providers]); // ✅ 包含配置值但使用 ref 防止重复初始化
 
   // Cleanup only on unmount
   useEffect(() => {
@@ -327,18 +352,24 @@ const ChatBot = () => {
   // Update configuration when settings change (after initial load)
   useEffect(() => {
     // Skip if still loading or if handler not yet created
-    if (isLoadingHost || isLoadingToken || isLoadingModel || !messageHandlerRef.current) {
+    if (isLoadingHost || isLoadingModel || isLoadingProviders || !messageHandlerRef.current) {
       return;
     }
 
     messageHandlerRef.current.updateConfig({
       initialModel: aiModel || "deepseek-chat",
       initialAiHost: aiHost || "https://api.openai.com/v1/chat/completions",
-      initialAiToken: aiToken || "",
+      initialAiToken: getCurrentToken(),
     });
-  }, [aiModel, aiHost, aiToken, isLoadingHost, isLoadingToken, isLoadingModel]);
+  }, [aiModel, aiHost, selectedProvider, providers, isLoadingHost, isLoadingModel, isLoadingProviders]);
 
   const handleSubmit = (message: PromptInputMessage | string) => {
+    console.log("[handleSubmit] Called with:", typeof message === "string" ? message.substring(0, 50) : {
+      hasText: !!message.text,
+      hasFiles: !!message.files?.length,
+      hasContexts: !!message.contexts?.length
+    });
+
     // Handle string input (from welcome suggestions)
     if (typeof message === "string") {
       if (!message.trim()) return;
@@ -403,7 +434,6 @@ const ChatBot = () => {
 
   const handleOpenSettings = () => {
     setTempAiHost(aiHost || "");
-    setTempAiToken(aiToken || "");
     setTempAiModel(aiModel || "");
     setShowSettings(true);
   };
@@ -419,7 +449,6 @@ const ChatBot = () => {
     try {
       // Save AI settings
       setAiHost(tempAiHost);
-      setAiToken(tempAiToken);
       setAiModel(tempAiModel);
 
       // Save host access settings
@@ -506,7 +535,19 @@ const ChatBot = () => {
     try {
       await providerManager.deleteProviderKey(providerName);
 
-      // Refresh providers list
+      // Clear default provider if it was the deleted one
+      const currentDefault = providerManager.getDefaultProvider();
+      if (currentDefault === providerName) {
+        await providerManager.clearDefaultProvider();
+        // Clear the default model as well
+        await providerManager.setDefaultModel("");
+        // Clear UI state for default provider
+        setAiModel("");
+        setAiHost("");
+        setSelectedModelName("");
+      }
+
+      // Refresh providers list (other providers should remain)
       const updatedProviders = providerManager.getProvidersWithKeys();
       setProviders(updatedProviders);
 
@@ -515,19 +556,55 @@ const ChatBot = () => {
         setSelectedProvider(null);
         setProviderModels([]);
         setIsAddingKey(false);
+        setProviderError(null);
       }
+
+      // Close the command dialog if it was open
+      setIsCommandOpen(false);
+      setShowProviderOptions(null);
     } catch (error) {
       console.error("Failed to delete API key:", error);
     }
   };
 
-  const handleModelSelect = (modelId: string) => {
+  const handleModelSelect = async (modelId: string) => {
+    console.log("[handleModelSelect] Called with modelId:", modelId, "selectedProvider:", selectedProvider);
+
     if (!selectedProvider) return;
+
+    // Get the provider config to determine the correct host URL
+    const provider = providerManager.getProviderByName(selectedProvider);
+    if (!provider) {
+      console.error("[handleModelSelect] Provider not found:", selectedProvider);
+      return;
+    }
+
+    // Set the correct host URL for this provider
+    const hostUrl = `${provider.url}${provider.endpoints.chat}`;
+    console.log("[handleModelSelect] Setting host URL to:", hostUrl);
+    setAiHost(hostUrl);
 
     // Set the AI model and close the dialog
     setAiModel(modelId);
-    setSelectedModelName(modelId);
+    const currentModel = models.find(model => model.value === modelId);
+    setSelectedModelName(currentModel ? currentModel.name : modelId);
     setIsCommandOpen(false);
+
+    // Set this provider as the default
+    await providerManager.setDefaultProvider(selectedProvider);
+    await providerManager.setDefaultModel(modelId);
+
+    console.log("[handleModelSelect] Set default provider and model, getting token...");
+
+    // Explicitly update MessageHandler with new token and host
+    if (messageHandlerRef.current) {
+      const token = getCurrentToken();
+      console.log("[handleModelSelect] Updating MessageHandler with token:", token ? "present" : "empty", "length:", token.length, "host:", hostUrl);
+      messageHandlerRef.current.updateConfig({
+        initialAiToken: token,
+        initialAiHost: hostUrl,
+      });
+    }
 
     // Reset provider selection state
     setSelectedProvider(null);
@@ -830,7 +907,7 @@ const ChatBot = () => {
                         : "max-w-0 opacity-0"
                     )}
                   >
-                    {selectedModelName || "models"}
+                    {selectedModelName || ""}
                   </span>
                 </div>
               </Button>
@@ -936,17 +1013,6 @@ const ChatBot = () => {
                   />
                 </div>
 
-                {/* AI Token */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">{t("settings.aiToken")}</label>
-                  <Input
-                    type="password"
-                    value={tempAiToken}
-                    onChange={(e) => setTempAiToken(e.target.value)}
-                    placeholder={t("settings.tokenPlaceholder")}
-                  />
-                </div>
-
                 {/* AI Model */}
                 <div className="space-y-2">
                   <label className="text-sm font-medium">{t("settings.aiModel")}</label>
@@ -955,6 +1021,14 @@ const ChatBot = () => {
                     onChange={(e) => setTempAiModel(e.target.value)}
                     placeholder={t("settings.modelPlaceholder")}
                   />
+                </div>
+
+                {/* Provider Management Info */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">API Keys</label>
+                  <p className="text-xs text-muted-foreground">
+                    Manage your API keys for different AI providers using the model selector button in the chat input.
+                  </p>
                 </div>
               </div>
             )}

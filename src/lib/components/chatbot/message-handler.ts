@@ -119,6 +119,13 @@ export class MessageHandler {
 
   // --- Configuration Updates ---
   public updateConfig(config: Partial<MessageHandlerConfig>): void {
+    console.log("[MessageHandler] updateConfig called with:", {
+      hasToken: !!config.initialAiToken,
+      tokenLength: config.initialAiToken?.length || 0,
+      model: config.initialModel,
+      host: config.initialAiHost
+    });
+
     if (config.initialMessages) {
       this.initialMessages = config.initialMessages;
     }
@@ -133,11 +140,22 @@ export class MessageHandler {
     }
     if (config.initialAiToken) {
       this.aiToken = config.initialAiToken;
+      console.log("[MessageHandler] Token updated, new token length:", this.aiToken.length);
     }
   }
 
   // --- Core Logic ---
   public sendMessage(text: string, files?: FileUIPart[], contexts?: ContextItem[]): void {
+    console.log("[MessageHandler] sendMessage called with:", {
+      text: text.substring(0, 50) + (text.length > 50 ? "..." : ""),
+      hasFiles: !!files?.length,
+      hasContexts: !!contexts?.length,
+      currentToken: this.aiToken ? "present" : "empty",
+      tokenLength: this.aiToken.length,
+      model: this.model,
+      host: this.aiHost
+    });
+
     if (!text.trim() && (!files || files.length === 0) && (!contexts || contexts.length === 0)) return;
 
     const parts: (UITextPart | UIFilePart | UIContextPart)[] = [];
@@ -866,6 +884,13 @@ export class MessageHandler {
     // Stop any existing stream but keep processing flag
     this.stopStream({ preserveProcessing: true });
     this.setStatus("submitted");
+
+    console.log("[MessageHandler] Starting stream with config:", {
+      model: this.model,
+      host: this.aiHost,
+      hasToken: !!this.aiToken,
+      tokenLength: this.aiToken.length
+    });
 
     // Check if cancelled before starting
     if (this.processingToken?.isCancelled) {

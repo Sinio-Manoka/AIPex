@@ -43,11 +43,22 @@ export interface ProvidersConfig {
   providers: Provider[];
 }
 
+// New JSON-based token storage structure
+export interface TokenStorage {
+  providers: {
+    [providerName: string]: {
+      apiKey: string;
+    };
+  };
+  defaultProvider?: string;
+  defaultModel?: string;
+}
+
 class ProviderManager {
   private providers: Provider[] = [];
-  private providerKeys: Map<string, string> = new Map();
-  private providerModels: Map<string, string[]> = new Map();
+  private tokenStorage: TokenStorage = { providers: {} };
   private storage: Storage;
+  private readonly STORAGE_KEY = "aiTokens";
 
   constructor() {
     this.storage = new Storage();
@@ -58,8 +69,8 @@ class ProviderManager {
       // Use the imported providers configuration directly
       this.providers = providersConfig.providers;
 
-      // Load saved API keys from storage
-      await this.loadProviderKeys();
+      // Load token storage from JSON
+      await this.loadTokenStorage();
 
       return this.providers;
     } catch (error) {
@@ -68,33 +79,63 @@ class ProviderManager {
     }
   }
 
-  async loadProviderKeys(): Promise<void> {
+  async loadTokenStorage(): Promise<void> {
     try {
-      for (const provider of this.providers) {
-        const key = await this.getProviderKeyFromStorage(provider.name);
-        if (key) {
-          this.providerKeys.set(provider.name, key);
-        }
+      const stored = await this.storage.get<TokenStorage>(this.STORAGE_KEY);
+      if (stored) {
+        this.tokenStorage = stored;
+      } else {
+        // Initialize empty storage if none exists
+        this.tokenStorage = { providers: {} };
       }
+
+      // Migrate old individual keys if they exist
+      await this.migrateOldKeys();
     } catch (error) {
-      console.error('Failed to load provider keys:', error);
+      console.error('Failed to load token storage:', error);
+      this.tokenStorage = { providers: {} };
     }
   }
 
-  async getProviderKeyFromStorage(providerName: string): Promise<string | null> {
+  async migrateOldKeys(): Promise<void> {
+    let hasMigrated = false;
+
+    for (const provider of this.providers) {
+      const oldKey = await this.storage.get<string>(`provider_${provider.name}_key`);
+      if (oldKey && !this.tokenStorage.providers[provider.name]) {
+        this.tokenStorage.providers[provider.name] = {
+          apiKey: oldKey
+        };
+        hasMigrated = true;
+
+        // Remove old key
+        await this.storage.remove(`provider_${provider.name}_key`);
+      }
+    }
+
+    if (hasMigrated) {
+      await this.saveTokenStorage();
+    }
+  }
+
+  async saveTokenStorage(): Promise<void> {
     try {
-      const key = await this.storage.get<string>(`provider_${providerName}_key`);
-      return key || null;
+      await this.storage.set(this.STORAGE_KEY, this.tokenStorage);
     } catch (error) {
-      console.error(`Failed to get key for ${providerName}:`, error);
-      return null;
+      console.error('Failed to save token storage:', error);
+      throw error;
     }
   }
 
   async saveProviderKey(providerName: string, apiKey: string): Promise<void> {
     try {
-      await this.storage.set(`provider_${providerName}_key`, apiKey);
-      this.providerKeys.set(providerName, apiKey);
+      // Initialize provider entry if it doesn't exist
+      if (!this.tokenStorage.providers[providerName]) {
+        this.tokenStorage.providers[providerName] = { apiKey: '' };
+      }
+
+      this.tokenStorage.providers[providerName].apiKey = apiKey;
+      await this.saveTokenStorage();
     } catch (error) {
       console.error(`Failed to save key for ${providerName}:`, error);
       throw error;
@@ -103,9 +144,10 @@ class ProviderManager {
 
   async deleteProviderKey(providerName: string): Promise<void> {
     try {
-      await this.storage.set(`provider_${providerName}_key`, '');
-      this.providerKeys.delete(providerName);
-      this.providerModels.delete(providerName);
+      if (this.tokenStorage.providers[providerName]) {
+        delete this.tokenStorage.providers[providerName];
+        await this.saveTokenStorage();
+      }
     } catch (error) {
       console.error(`Failed to delete key for ${providerName}:`, error);
       throw error;
@@ -113,7 +155,7 @@ class ProviderManager {
   }
 
   getProviderKey(providerName: string): string | null {
-    return this.providerKeys.get(providerName) || null;
+    return this.tokenStorage.providers[providerName]?.apiKey || null;
   }
 
   async fetchModels(providerName: string): Promise<string[]> {
@@ -143,9 +185,6 @@ class ProviderManager {
       const data = await response.json();
       const models = data.data?.map((model: any) => model.id) || [];
 
-      // Cache the models
-      this.providerModels.set(providerName, models);
-
       return models;
     } catch (error) {
       console.error(`Failed to fetch models for ${providerName}:`, error);
@@ -153,8 +192,9 @@ class ProviderManager {
     }
   }
 
-  getCachedModels(providerName: string): string[] | null {
-    return this.providerModels.get(providerName) || null;
+  getCachedModels(_providerName: string): string[] | null {
+    // Models are not cached in token storage anymore - return null to force fresh fetch
+    return null;
   }
 
   getProvidersWithKeys(): ProviderWithKey[] {
@@ -169,8 +209,33 @@ class ProviderManager {
     return this.providers.find(p => p.name === name) || null;
   }
 
+  // New methods for managing default provider/model
+  getDefaultProvider(): string | null {
+    return this.tokenStorage.defaultProvider || null;
+  }
+
+  getDefaultModel(): string | null {
+    return this.tokenStorage.defaultModel || null;
+  }
+
+  async setDefaultProvider(providerName: string): Promise<void> {
+    this.tokenStorage.defaultProvider = providerName;
+    await this.saveTokenStorage();
+  }
+
+  async setDefaultModel(modelName: string): Promise<void> {
+    this.tokenStorage.defaultModel = modelName;
+    await this.saveTokenStorage();
+  }
+
+  async clearDefaultProvider(): Promise<void> {
+    delete this.tokenStorage.defaultProvider;
+    delete this.tokenStorage.defaultModel;
+    await this.saveTokenStorage();
+  }
+
   clearCache(): void {
-    this.providerModels.clear();
+    // No caching in token storage anymore - models are fetched fresh each time
   }
 }
 
