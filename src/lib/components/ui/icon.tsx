@@ -15,6 +15,7 @@ import {
   CameraIcon,
   FileIcon,
   BotIcon,
+  BotMessageSquareIcon,
   CheckIcon,
   MessageSquareIcon,
   UsersIcon,
@@ -53,6 +54,7 @@ import {
   MoonIcon,
   MonitorIcon,
   SendIcon,
+  SendHorizontalIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -99,6 +101,7 @@ export const Icons = {
   camera: CameraIcon,
   file: FileIcon,
   bot: BotIcon,
+  botMessageSquare: BotMessageSquareIcon,
   check: CheckIcon,
   message: MessageSquareIcon,
   users: UsersIcon,
@@ -137,6 +140,7 @@ export const Icons = {
   shield: ShieldIcon,
   key: KeyIcon,
   send: SendIcon,
+  sendHorizontal: SendHorizontalIcon,
 
   // User
   user: UserIcon,
@@ -156,9 +160,10 @@ interface IconProps {
   size?: IconSize;
   variant?: IconVariant;
   className?: string;
+  strokeWidth?: number;
 }
 
-export const Icon = ({ name, size = "md", variant = "default", className }: IconProps) => {
+export const Icon = ({ name, size = "md", variant = "default", className, strokeWidth }: IconProps) => {
   const IconComponent = Icons[name] as LucideIcon;
 
   return (
@@ -168,6 +173,7 @@ export const Icon = ({ name, size = "md", variant = "default", className }: Icon
         variantClasses[variant],
         className
       )}
+      strokeWidth={strokeWidth}
     />
   );
 };

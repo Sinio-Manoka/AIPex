@@ -158,6 +158,8 @@ const ChatBot = () => {
   const [aiHost, setAiHost, isLoadingHost] = useStorage("aiHost", import.meta.env.VITE_AI_HOST || "https://api.openai.com/v1/chat/completions");
   const [aiModel, setAiModel, isLoadingModel] = useStorage("aiModel", import.meta.env.VITE_AI_MODEL || "deepseek-chat");
   const [isModelButtonHovered, setIsModelButtonHovered] = useState(false);
+  const [isThemeButtonHovered, setIsThemeButtonHovered] = useState(false);
+  const [isNewChatButtonHovered, setIsNewChatButtonHovered] = useState(false);
   const [selectedModelName, setSelectedModelName] = useState("");
   const [isCommandOpen, setIsCommandOpen] = useState(false);
 
@@ -579,19 +581,22 @@ const ChatBot = () => {
               const nextIndex = (currentIndex + 1) % themes.length;
               setTheme(themes[nextIndex]);
             }}
-            className="w-8 h-8 p-0 border border-border bg-transparent hover:bg-accent"
+            onMouseEnter={() => setIsThemeButtonHovered(true)}
+            onMouseLeave={() => setIsThemeButtonHovered(false)}
+            className="w-8 h-8 p-0 border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground group"
             title={`Current theme: ${theme || 'system'}`}
           >
             <Icon
               name={(theme || 'system') === 'dark' ? 'moon' : (theme || 'system') === 'light' ? 'sun' : 'monitor'}
               size="sm"
-              variant="muted"
+              variant={isThemeButtonHovered ? "default" : "muted"}
+              className="transition-transform duration-300 group-hover:rotate-90"
             />
           </Button>
 
           {/* Language Selector Button */}
           <Select value={language} onValueChange={(value) => changeLanguage(value as Language)}>
-            <SelectTrigger className="w-auto h-8 px-2 text-xs border border-border bg-transparent hover:bg-accent">
+            <SelectTrigger className="w-auto h-8 px-2 text-xs border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -604,9 +609,11 @@ const ChatBot = () => {
           variant="ghost"
           size="sm"
           onClick={handleNewChat}
-          className="w-8 h-8 border border-border"
+          onMouseEnter={() => setIsNewChatButtonHovered(true)}
+          onMouseLeave={() => setIsNewChatButtonHovered(false)}
+          className="w-8 h-8 border border-border text-muted-foreground hover:text-foreground group"
         >
-          <Icon name="plus" size="sm" variant="muted" />
+          <Icon name="plus" size="sm" variant={isNewChatButtonHovered ? "default" : "muted"} className="transition-transform duration-300 group-hover:rotate-90" />
         </Button>
       </div>
 
@@ -805,18 +812,19 @@ const ChatBot = () => {
                   "relative overflow-hidden transition-all duration-300 ease-out",
                   "text-muted-foreground hover:text-foreground",
                   "bg-transparent hover:bg-accent",
-                  "border border-transparent hover:border-border",
+                  "border border-border",
                   "min-w-[40px] w-auto",
                   isModelButtonHovered || selectedModelName
-                    ? "px-3"
-                    : "px-2"
+                    ? "px-2"
+                    : "px-2",
+                  "group"
                 )}
                 onMouseEnter={() => setIsModelButtonHovered(true)}
                 onMouseLeave={() => setIsModelButtonHovered(false)}
                 onClick={() => setIsCommandOpen(true)}
               >
-                <div className="flex items-center gap-2 transition-all duration-300">
-                  <Icon name="bot" size="sm" variant="muted" />
+                <div className={cn("flex items-center transition-all duration-300", (isModelButtonHovered || selectedModelName) && "gap-2")}>
+                  <Icon name="botMessageSquare" size="sm" variant={isModelButtonHovered ? "default" : "muted"} className="transition-transform duration-300 group-hover:rotate-12" />
                   <span
                     className={cn(
                       "transition-all duration-300 overflow-hidden whitespace-nowrap",
@@ -836,16 +844,16 @@ const ChatBot = () => {
               disabled={!input && status === "idle"}
               onClick={status === "streaming" ? handleStop : undefined}
               className={cn(
-                "transition-all duration-200 rounded-full aspect-square w-8 h-8 p-0 flex items-center justify-center",
+                "transition-all duration-200 rounded-full aspect-square w-8 h-8 p-0 flex items-center justify-center group",
                 status === "streaming"
-                  ? "bg-red-600 hover:bg-red-700 text-white"
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
+                  ? "bg-red-600 hover:bg-red-700 text-white hover:scale-110"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground hover:scale-110"
               )}
             >
               {status === "streaming" ? (
-                <Icon name="x" size="sm" className="text-current" />
+                <Icon name="x" size="sm" className="text-current transition-transform duration-200 group-hover:rotate-90" />
               ) : (
-                <Icon name="chevronUp" size="sm" className="text-current" />
+                <Icon name="sendHorizontal" size="sm" className="text-current transition-transform duration-200 group-hover:-rotate-12" strokeWidth={2.5} />
               )}
             </Button>
           </PromptInputToolbar>
@@ -917,7 +925,7 @@ const ChatBot = () => {
                         {!provider.apiKey && provider.api_key_required && (
                           <Badge
                             variant="secondary"
-                            className="text-xs bg-blue-500 text-white dark:bg-blue-600"
+                            className="text-xs bg-primary text-primary-foreground"
                           >
                             Add New Key
                           </Badge>

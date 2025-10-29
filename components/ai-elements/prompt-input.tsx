@@ -1185,8 +1185,8 @@ export const PromptInputActionMenuTrigger = ({
   ...props
 }: PromptInputActionMenuTriggerProps) => (
   <DropdownMenuTrigger asChild>
-    <PromptInputButton className={className} {...props}>
-      {children ?? <PlusIcon className="size-4" />}
+    <PromptInputButton className={cn("group border border-transparent hover:border-border", className)} {...props}>
+      {children ?? <PlusIcon className="size-4 transition-transform duration-300 group-hover:rotate-90" />}
     </PromptInputButton>
   </DropdownMenuTrigger>
 );
