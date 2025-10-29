@@ -811,7 +811,7 @@ const ChatBot = () => {
               {status === "streaming" ? (
                 <Icon name="x" size="sm" className="text-current transition-transform duration-200 group-hover:rotate-90" />
               ) : (
-                <Icon name="sendHorizontal" size="sm" className="text-current transition-transform duration-200 group-hover:-rotate-12" strokeWidth={2.5} />
+                <Icon name="sendHorizontal" size="sm" className="text-current dark:text-white transition-transform duration-200 group-hover:-rotate-12" strokeWidth={2.5} />
               )}
             </Button>
           </PromptInputToolbar>
