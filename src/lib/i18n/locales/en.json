@@ -180,5 +180,23 @@
     "capture_screenshot_to_clipboard": "Capture Screenshot to Clipboard",
     "read_clipboard_image": "Read Clipboard Image",
     "get_clipboard_image_info": "Get Clipboard Image Info"
+  },
+  "providers": {
+    "searchPlaceholder": "Search providers...",
+    "noProvidersFound": "No providers found.",
+    "manageProvider": "Manage {providerName}",
+    "modifyApiKey": "Modify API Key",
+    "deleteApiKey": "Delete API Key",
+    "backToProviders": "Back to providers",
+    "aiProviders": "AI Providers",
+    "loadingProviders": "Loading providers...",
+    "addNewKey": "Add New Key",
+    "addApiKeyFor": "Add API Key for {providerName}",
+    "enterApiKey": "Enter API key...",
+    "back": "Back",
+    "addKey": "Add Key",
+    "modelsFor": "Models for {providerName}",
+    "loadingModels": "Loading models...",
+    "noModelsAvailable": "No models available"
   }
 }

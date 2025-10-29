@@ -180,5 +180,23 @@
         "capture_screenshot_to_clipboard": "Screenshot in Zwischenablage aufnehmen",
         "read_clipboard_image": "Zwischenablage-Bild lesen",
         "get_clipboard_image_info": "Zwischenablage-Bild-Info abrufen"
+    },
+    "providers": {
+        "searchPlaceholder": "Anbieter suchen...",
+        "noProvidersFound": "Keine Anbieter gefunden.",
+        "manageProvider": "{providerName} verwalten",
+        "modifyApiKey": "API-Schlüssel ändern",
+        "deleteApiKey": "API-Schlüssel löschen",
+        "backToProviders": "Zurück zu Anbietern",
+        "aiProviders": "KI-Anbieter",
+        "loadingProviders": "Anbieter werden geladen...",
+        "addNewKey": "Neuen Schlüssel hinzufügen",
+        "addApiKeyFor": "API-Schlüssel für {providerName} hinzufügen",
+        "enterApiKey": "API-Schlüssel eingeben...",
+        "back": "Zurück",
+        "addKey": "Schlüssel hinzufügen",
+        "modelsFor": "Modelle für {providerName}",
+        "loadingModels": "Modelle werden geladen...",
+        "noModelsAvailable": "Keine Modelle verfügbar"
     }
 }

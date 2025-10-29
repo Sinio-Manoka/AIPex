@@ -103,7 +103,7 @@ export const getTranslation = (
 
     // Replace parameters in the translation
     if (params) {
-      return value.replace(/\{\{(\w+)\}\}/g, (match, paramKey) => {
+      return value.replace(/\{(\w+)\}/g, (match, paramKey) => {
         const paramValue = params[paramKey]
         return paramValue !== undefined ? String(paramValue) : match
       })

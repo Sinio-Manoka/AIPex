@@ -63,6 +63,24 @@ export interface TranslationResources {
   tools: {
     [key: string]: string
   }
+  providers: {
+    searchPlaceholder: string
+    noProvidersFound: string
+    manageProvider: string
+    modifyApiKey: string
+    deleteApiKey: string
+    backToProviders: string
+    aiProviders: string
+    loadingProviders: string
+    addNewKey: string
+    addApiKeyFor: string
+    enterApiKey: string
+    back: string
+    addKey: string
+    modelsFor: string
+    loadingModels: string
+    noModelsAvailable: string
+  }
 }
 
 export type TranslationKey =
@@ -110,6 +128,22 @@ export type TranslationKey =
   | 'input.placeholder3'
   | 'welcome.title'
   | 'welcome.subtitle'
+  | 'providers.searchPlaceholder'
+  | 'providers.noProvidersFound'
+  | 'providers.manageProvider'
+  | 'providers.modifyApiKey'
+  | 'providers.deleteApiKey'
+  | 'providers.backToProviders'
+  | 'providers.aiProviders'
+  | 'providers.loadingProviders'
+  | 'providers.addNewKey'
+  | 'providers.addApiKeyFor'
+  | 'providers.enterApiKey'
+  | 'providers.back'
+  | 'providers.addKey'
+  | 'providers.modelsFor'
+  | 'providers.loadingModels'
+  | 'providers.noModelsAvailable'
 
 export interface I18nContextValue {
   language: Language

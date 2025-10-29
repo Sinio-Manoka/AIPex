@@ -822,22 +822,22 @@ const ChatBot = () => {
 
       {/* Command Dialog for Provider and Model Selection */}
       <CommandDialog open={isCommandOpen} onOpenChange={setIsCommandOpen}>
-        <CommandInput placeholder="Search providers..." />
+        <CommandInput placeholder={t("providers.searchPlaceholder")} />
         <CommandList>
           <CommandEmpty className="py-6 text-center text-sm">
-            No providers found.
+            {t("providers.noProvidersFound")}
           </CommandEmpty>
 
           {/* Show provider options when cogwheel is clicked */}
           {showProviderOptions && (
-            <CommandGroup heading={`Manage ${showProviderOptions}`} className="p-1">
+            <CommandGroup heading={t("providers.manageProvider", { providerName: showProviderOptions })} className="p-1">
               <CommandItem
                 onSelect={() => handleModifyKey(showProviderOptions)}
                 className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground"
               >
                 <div className="flex items-center gap-2">
                   <Icon name="edit" size="xs" />
-                  Modify API Key
+                  {t("providers.modifyApiKey")}
                 </div>
               </CommandItem>
               <CommandItem
@@ -846,14 +846,14 @@ const ChatBot = () => {
               >
                 <div className="flex items-center gap-2">
                   <Icon name="trash" size="xs" className="text-destructive" />
-                  Delete API Key
+                  {t("providers.deleteApiKey")}
                 </div>
               </CommandItem>
               <CommandSeparator className="mb-1 mt-1" />
               <CommandItem onSelect={handleBackFromOptions} className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground">
                 <div className="flex items-center gap-2">
                   <Icon name="chevronLeft" size="xs" />
-                  Back to providers
+                  {t("providers.backToProviders")}
                 </div>
               </CommandItem>
             </CommandGroup>
@@ -861,12 +861,12 @@ const ChatBot = () => {
 
           {/* Show provider list when no provider is selected and not showing options */}
           {!selectedProvider && !isAddingKey && !showProviderOptions && (
-            <CommandGroup heading="AI Providers" className="p-1">
+            <CommandGroup heading={t("providers.aiProviders")} className="p-1">
               {isLoadingProviders ? (
                 <CommandItem disabled>
                   <div className="flex items-center gap-2">
                     <Icon name="refresh" size="sm" className="animate-spin" />
-                    Loading providers...
+                    {t("providers.loadingProviders")}
                   </div>
                 </CommandItem>
               ) : (
@@ -885,7 +885,7 @@ const ChatBot = () => {
                             variant="secondary"
                             className="text-xs bg-primary text-primary-foreground"
                           >
-                            Add New Key
+                            {t("providers.addNewKey")}
                           </Badge>
                         )}
                         {provider.apiKey && (
@@ -908,11 +908,11 @@ const ChatBot = () => {
 
           {/* Show API key input when adding key */}
           {isAddingKey && selectedProvider && (
-            <CommandGroup heading={`Add API Key for ${selectedProvider}`} className="p-1">
+            <CommandGroup heading={t("providers.addApiKeyFor", { providerName: selectedProvider })} className="p-1">
               <div className="px-2 py-1 space-y-2">
                 <Input
                   type="password"
-                  placeholder="Enter API key..."
+                  placeholder={t("providers.enterApiKey")}
                   value={providerApiKey}
                   onChange={(e) => setProviderApiKey(e.target.value)}
                   className="mb-2"
@@ -929,7 +929,7 @@ const ChatBot = () => {
                     onClick={handleBackToProviders}
                     className="flex-1"
                   >
-                    Back
+                    {t("providers.back")}
                   </Button>
                   <Button
                     size="sm"
@@ -940,7 +940,7 @@ const ChatBot = () => {
                     {isFetchingModels ? (
                       <Icon name="refresh" size="sm" className="animate-spin" />
                     ) : (
-                      "Add Key"
+                      t("providers.addKey")
                     )}
                   </Button>
                 </div>
@@ -950,7 +950,7 @@ const ChatBot = () => {
 
           {/* Show models list when provider is selected and has models */}
           {selectedProvider && !isAddingKey && (
-            <CommandGroup heading={`Models for ${selectedProvider}`} className="p-1">
+            <CommandGroup heading={t("providers.modelsFor", { providerName: selectedProvider })} className="p-1">
               {providerError && (
                 <div className="px-2 py-1">
                   <Alert variant="destructive">
@@ -963,7 +963,7 @@ const ChatBot = () => {
                 <CommandItem disabled>
                   <div className="flex items-center gap-2">
                     <Icon name="refresh" size="sm" className="animate-spin" />
-                    Loading models...
+                    {t("providers.loadingModels")}
                   </div>
                 </CommandItem>
               ) : providerModels.length > 0 ? (
@@ -990,7 +990,7 @@ const ChatBot = () => {
               ) : (
                 <CommandItem disabled>
                   <div className="text-sm text-muted-foreground">
-                    No models available
+                    {t("providers.noModelsAvailable")}
                   </div>
                 </CommandItem>
               )}
@@ -999,7 +999,7 @@ const ChatBot = () => {
               <CommandItem onSelect={handleBackToProviders} className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground">
                 <div className="flex items-center gap-2">
                   <Icon name="chevronLeft" size="xs" />
-                  Back to providers
+                  {t("providers.backToProviders")}
                 </div>
               </CommandItem>
             </CommandGroup>
