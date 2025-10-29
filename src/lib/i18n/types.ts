@@ -1,4 +1,4 @@
-export type Language = 'en' | 'zh'
+export type Language = 'en' | 'zh' | 'de'
 
 export interface TranslationResources {
   common: {
@@ -59,10 +59,6 @@ export interface TranslationResources {
   welcome: {
     title: string
     subtitle: string
-    organizeTabs: string
-    analyzePage: string
-    research: string
-    comparePrice: string
   }
   tools: {
     [key: string]: string
@@ -107,16 +103,13 @@ export type TranslationKey =
   | 'ai.enhancedPlanning'
   | 'language.en'
   | 'language.zh'
+  | 'language.de'
   | 'input.newLine'
   | 'input.placeholder1'
   | 'input.placeholder2'
   | 'input.placeholder3'
   | 'welcome.title'
   | 'welcome.subtitle'
-  | 'welcome.organizeTabs'
-  | 'welcome.analyzePage'
-  | 'welcome.research'
-  | 'welcome.comparePrice'
 
 export interface I18nContextValue {
   language: Language

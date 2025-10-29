@@ -18,7 +18,7 @@
     "language": "Language",
     "theme": "Theme",
     "aiHost": "AI Host",
-    "aiToken": "AI Token", 
+    "aiToken": "AI Token",
     "aiModel": "AI Model",
     "hostPlaceholder": "https://api.deepseek.com/chat/completions",
     "tokenPlaceholder": "Enter your API token",
@@ -33,7 +33,7 @@
   },
   "tooltip": {
     "newChat": "New Chat",
-    "settings": "Settings", 
+    "settings": "Settings",
     "close": "Close",
     "stopResponse": "Stop AI response"
   },
@@ -46,11 +46,12 @@
   },
   "language": {
     "en": "English",
-    "zh": "中文"
+    "zh": "中文",
+    "de": "Deutsch"
   },
   "images": {
     "currentPageScreenshot": "Current Page Screenshot",
-    "tabScreenshot": "Tab Screenshot", 
+    "tabScreenshot": "Tab Screenshot",
     "clipboardImage": "Clipboard Image",
     "genericImage": "Image"
   },
@@ -61,12 +62,8 @@
     "placeholder3": "Organize your tabs"
   },
   "welcome": {
-    "title": "Welcome to AIpex",
-    "subtitle": "Choose a quick action or ask anything to get started",
-    "organizeTabs": "Please organize my open tabs by topic and purpose",
-    "analyzePage": "Summarize this page and save key points to clipboard",
-    "research": "Please use Google to research topic 'MCP'",
-    "comparePrice": "Compare the price of iPhone 17"
+    "title": "Intershop Commerce Management",
+    "subtitle": "Navigate the Intershop website effortlessly and automate your e-commerce workflows"
   },
   "tools": {
     "get_all_tabs": "Get All Tabs",
@@ -78,7 +75,7 @@
     "get_tab_content": "Get Tab Content",
     "create_new_tab": "Create New Tab",
     "get_all_bookmarks": "Get All Bookmarks",
-    "get_bookmark_folders": "Get Bookmark Folders", 
+    "get_bookmark_folders": "Get Bookmark Folders",
     "create_bookmark": "Create Bookmark",
     "delete_bookmark": "Delete Bookmark",
     "search_bookmarks": "Search Bookmarks",
@@ -105,7 +102,7 @@
     "get_page_images": "Get Page Images",
     "search_page_text": "Search Page Text",
     "get_page_performance": "Get Page Performance",
-    "get_page_accessibility": "Get Page Accessibility", 
+    "get_page_accessibility": "Get Page Accessibility",
     "get_interactive_elements": "Get Interactive Elements",
     "click_element": "Click Element",
     "summarize_page": "Summarize Page",
@@ -158,7 +155,7 @@
     "get_all_downloads": "Get All Downloads",
     "get_download": "Get Download",
     "pause_download": "Pause Download",
-    "resume_download": "Resume Download", 
+    "resume_download": "Resume Download",
     "cancel_download": "Cancel Download",
     "remove_download": "Remove Download",
     "open_download": "Open Download",

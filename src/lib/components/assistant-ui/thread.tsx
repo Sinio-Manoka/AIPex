@@ -74,8 +74,8 @@ const SendStopButton: FC<SendStopButtonProps> = ({
       onClick={onSend}
       disabled={isDisabled}
       className={`flex items-center justify-center gap-2 rounded-2xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl border-2 ${isDisabled
-          ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-300'
-          : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 hover:scale-105 border-blue-500 hover:border-blue-600'
+        ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-300'
+        : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 hover:scale-105 border-blue-500 hover:border-blue-600'
         }`}
       style={{
         height: `${height}px`,
@@ -1144,8 +1144,8 @@ export const Thread: FC = () => {
                 <div
                   key={message.id}
                   className={`p-4 rounded-lg ${message.role === 'user'
-                      ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-gray-800 ml-12 border border-emerald-200'
-                      : 'bg-gray-100 text-gray-900 mr-12'
+                    ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-gray-800 ml-12 border border-emerald-200'
+                    : 'bg-gray-100 text-gray-900 mr-12'
                     }`}
                 >
                   {/* Render message content - prioritize parts over content to avoid duplication */}
@@ -1353,8 +1353,8 @@ export const Thread: FC = () => {
                   data-tab-index={index}
                   onClick={() => handleTabSelect(tab)}
                   className={`w-full text-left px-2 py-1 rounded-sm transition-colors ${index === selectedIndex
-                      ? 'bg-blue-500 text-white'
-                      : 'hover:bg-blue-50'
+                    ? 'bg-blue-500 text-white'
+                    : 'hover:bg-blue-50'
                     }`}
                 >
                   <div className="flex items-center gap-1.5">
