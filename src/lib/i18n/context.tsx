@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react"
 import type { Language, I18nContextValue, TranslationKey } from "./types"
-import { 
-  getStoredLanguage, 
-  setStoredLanguage, 
-  createTranslationFunction, 
-  DEFAULT_LANGUAGE 
+import {
+  getStoredLanguage,
+  setStoredLanguage,
+  createTranslationFunction,
+  DEFAULT_LANGUAGE
 } from "./index"
 
 // Create the context
@@ -17,6 +17,7 @@ interface I18nProviderProps {
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   const [language, setLanguage] = useState<Language>(DEFAULT_LANGUAGE)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isChangingLanguage, setIsChangingLanguage] = useState(false)
 
   // Initialize language from storage
   useEffect(() => {
@@ -38,11 +39,17 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   // Change language function
   const changeLanguage = useCallback(async (newLanguage: Language) => {
     try {
-      setLanguage(newLanguage)
+      setIsChangingLanguage(true)
+      // Add a small delay for animation
+      setTimeout(() => {
+        setLanguage(newLanguage)
+        setIsChangingLanguage(false)
+      }, 150)
       await setStoredLanguage(newLanguage)
       console.log(`Language changed to: ${newLanguage}`)
     } catch (error) {
       console.error('Failed to change language:', error)
+      setIsChangingLanguage(false)
       // Revert to previous language on error
       const fallbackLanguage = await getStoredLanguage()
       setLanguage(fallbackLanguage)
@@ -59,7 +66,8 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
   const contextValue: I18nContextValue = {
     language,
     t,
-    changeLanguage
+    changeLanguage,
+    isChangingLanguage
   }
 
   // Don't render children until language is initialized
@@ -77,11 +85,11 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
 // Custom hook to use the i18n context
 export const useTranslation = (): I18nContextValue => {
   const context = useContext(I18nContext)
-  
+
   if (!context) {
     throw new Error('useTranslation must be used within an I18nProvider')
   }
-  
+
   return context
 }
 

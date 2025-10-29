@@ -103,7 +103,7 @@ const WelcomeScreen = () => {
 };
 
 const ChatBot = () => {
-  const { t, language } = useTranslation()
+  const { t, language, isChangingLanguage } = useTranslation()
   const changeLanguage = useLanguageChanger()
   const { theme, setTheme } = useTheme()
   const [input, setInput] = useState("");
@@ -576,151 +576,156 @@ const ChatBot = () => {
       </div>
 
       <div className="flex-1 overflow-hidden">
-        <Conversation className="h-full">
-          <ConversationContent>
-            {messages.filter((message) => message.role !== "system").length === 0 ? (
-              <WelcomeScreen />
-            ) : (
-              messages.filter((message) => message.role !== "system").map((message, messageIndex) => (
-                <div key={message.id}>
-                  {message.role === "assistant" &&
-                    message.parts.filter((part) => part.type === "source-url").length > 0 && (
-                      <Sources>
-                        <SourcesTrigger
-                          count={message.parts.filter((part) => part.type === "source-url").length}
-                        />
-                        {message.parts
-                          .filter((part) => part.type === "source-url")
-                          .map((part, i) => (
-                            <SourcesContent key={`${message.id}-${i}`}>
-                              <Source key={`${message.id}-${i}`} href={(part as any).url} title={(part as any).url} />
-                            </SourcesContent>
-                          ))}
-                      </Sources>
-                    )}
-                  {message.parts.map((part, i) => {
-                    switch (part.type) {
-                      case "text":
-                        const isLastMessage = messageIndex === messages.length - 1;
-                        return (
-                          <Fragment key={`${message.id}-${i}`}>
-                            <Message from={message.role as "user" | "assistant" | "system"}>
+        <div className={cn(
+          "h-full transition-all duration-300 ease-in-out",
+          isChangingLanguage ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        )}>
+          <Conversation className="h-full">
+            <ConversationContent>
+              {messages.filter((message) => message.role !== "system").length === 0 ? (
+                <WelcomeScreen />
+              ) : (
+                messages.filter((message) => message.role !== "system").map((message, messageIndex) => (
+                  <div key={message.id}>
+                    {message.role === "assistant" &&
+                      message.parts.filter((part) => part.type === "source-url").length > 0 && (
+                        <Sources>
+                          <SourcesTrigger
+                            count={message.parts.filter((part) => part.type === "source-url").length}
+                          />
+                          {message.parts
+                            .filter((part) => part.type === "source-url")
+                            .map((part, i) => (
+                              <SourcesContent key={`${message.id}-${i}`}>
+                                <Source key={`${message.id}-${i}`} href={(part as any).url} title={(part as any).url} />
+                              </SourcesContent>
+                            ))}
+                        </Sources>
+                      )}
+                    {message.parts.map((part, i) => {
+                      switch (part.type) {
+                        case "text":
+                          const isLastMessage = messageIndex === messages.length - 1;
+                          return (
+                            <Fragment key={`${message.id}-${i}`}>
+                              <Message from={message.role as "user" | "assistant" | "system"}>
+                                <MessageContent>
+                                  <Response>{part.text}</Response>
+                                </MessageContent>
+                              </Message>
+                              {message.role === "assistant" && isLastMessage && (
+                                <Actions className="mt-2">
+                                  <Action onClick={() => handleRegenerate()} label="Retry">
+                                    <Icon name="refresh" size="xs" variant="muted" />
+                                  </Action>
+                                  <Action onClick={() => handleCopy(part.text)} label="Copy">
+                                    <Icon name="copy" size="xs" variant="muted" />
+                                  </Action>
+                                </Actions>
+                              )}
+                            </Fragment>
+                          );
+                        case "file":
+                          return (
+                            <Message key={`${message.id}-${i}`} from={message.role as "user" | "assistant" | "system"}>
                               <MessageContent>
-                                <Response>{part.text}</Response>
+                                {part.mediaType.startsWith("image/") ? (
+                                  <div className="max-w-md">
+                                    <img
+                                      src={part.url}
+                                      alt={part.filename || "Attached image"}
+                                      className="rounded-lg border border-gray-200 dark:border-gray-700"
+                                    />
+                                    {part.filename && (
+                                      <p className="text-xs text-muted-foreground mt-1">{part.filename}</p>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
+                                    <p className="text-sm">
+                                      📎 {part.filename || "Attached file"}
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">{part.mediaType}</p>
+                                  </div>
+                                )}
                               </MessageContent>
                             </Message>
-                            {message.role === "assistant" && isLastMessage && (
-                              <Actions className="mt-2">
-                                <Action onClick={() => handleRegenerate()} label="Retry">
-                                  <Icon name="refresh" size="xs" variant="muted" />
-                                </Action>
-                                <Action onClick={() => handleCopy(part.text)} label="Copy">
-                                  <Icon name="copy" size="xs" variant="muted" />
-                                </Action>
-                              </Actions>
-                            )}
-                          </Fragment>
-                        );
-                      case "file":
-                        return (
-                          <Message key={`${message.id}-${i}`} from={message.role as "user" | "assistant" | "system"}>
-                            <MessageContent>
-                              {part.mediaType.startsWith("image/") ? (
-                                <div className="max-w-md">
-                                  <img
-                                    src={part.url}
-                                    alt={part.filename || "Attached image"}
-                                    className="rounded-lg border border-gray-200 dark:border-gray-700"
-                                  />
-                                  {part.filename && (
-                                    <p className="text-xs text-muted-foreground mt-1">{part.filename}</p>
+                          );
+                        case "tool":
+                          return (
+                            <Tool key={`${message.id}-${i}`} defaultOpen={false}>
+                              <ToolHeader type={`tool-${part.toolName}`} state={part.state} />
+                              <ToolContent>
+                                <ToolInput input={part.input} />
+                                <ToolOutput
+                                  output={
+                                    part.output ? (
+                                      <Response>
+                                        {formatToolOutput(part.output)}
+                                      </Response>
+                                    ) : undefined
+                                  }
+                                  errorText={part.errorText}
+                                />
+                              </ToolContent>
+                            </Tool>
+                          );
+                        case "reasoning":
+                          return (
+                            <Reasoning
+                              key={`${message.id}-${i}`}
+                              className="w-full"
+                              isStreaming={
+                                status === "streaming" &&
+                                i === message.parts.length - 1 &&
+                                message.id === messages[messages.length - 1]?.id
+                              }
+                            >
+                              <ReasoningTrigger />
+                              <ReasoningContent>{part.text}</ReasoningContent>
+                            </Reasoning>
+                          );
+                        case "context":
+                          return (
+                            <div
+                              key={`${message.id}-${i}`}
+                              className={cn(
+                                "flex w-full items-end gap-2 py-2",
+                                message.role === "user" ? "justify-end" : "flex-row-reverse justify-end"
+                              )}
+                            >
+                              <div className="flex items-center gap-2 max-w-[80%] px-3 py-1.5 text-sm rounded-md bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
+                                <span className="text-primary flex-shrink-0">
+                                  {getContextIcon(part.contextType)}
+                                </span>
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                  <span className="font-medium text-foreground truncate">
+                                    {part.label}
+                                  </span>
+                                  {part.metadata?.url && (
+                                    <span className="text-xs text-muted-foreground truncate">
+                                      {part.metadata.url}
+                                    </span>
                                   )}
                                 </div>
-                              ) : (
-                                <div className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg">
-                                  <p className="text-sm">
-                                    📎 {part.filename || "Attached file"}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">{part.mediaType}</p>
-                                </div>
-                              )}
-                            </MessageContent>
-                          </Message>
-                        );
-                      case "tool":
-                        return (
-                          <Tool key={`${message.id}-${i}`} defaultOpen={false}>
-                            <ToolHeader type={`tool-${part.toolName}`} state={part.state} />
-                            <ToolContent>
-                              <ToolInput input={part.input} />
-                              <ToolOutput
-                                output={
-                                  part.output ? (
-                                    <Response>
-                                      {formatToolOutput(part.output)}
-                                    </Response>
-                                  ) : undefined
-                                }
-                                errorText={part.errorText}
-                              />
-                            </ToolContent>
-                          </Tool>
-                        );
-                      case "reasoning":
-                        return (
-                          <Reasoning
-                            key={`${message.id}-${i}`}
-                            className="w-full"
-                            isStreaming={
-                              status === "streaming" &&
-                              i === message.parts.length - 1 &&
-                              message.id === messages[messages.length - 1]?.id
-                            }
-                          >
-                            <ReasoningTrigger />
-                            <ReasoningContent>{part.text}</ReasoningContent>
-                          </Reasoning>
-                        );
-                      case "context":
-                        return (
-                          <div
-                            key={`${message.id}-${i}`}
-                            className={cn(
-                              "flex w-full items-end gap-2 py-2",
-                              message.role === "user" ? "justify-end" : "flex-row-reverse justify-end"
-                            )}
-                          >
-                            <div className="flex items-center gap-2 max-w-[80%] px-3 py-1.5 text-sm rounded-md bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-colors">
-                              <span className="text-primary flex-shrink-0">
-                                {getContextIcon(part.contextType)}
-                              </span>
-                              <div className="flex items-center gap-2 min-w-0 flex-1">
-                                <span className="font-medium text-foreground truncate">
-                                  {part.label}
+                                <span className="text-xs text-muted-foreground bg-background/50 px-1.5 py-0.5 rounded flex-shrink-0">
+                                  {part.contextType}
                                 </span>
-                                {part.metadata?.url && (
-                                  <span className="text-xs text-muted-foreground truncate">
-                                    {part.metadata.url}
-                                  </span>
-                                )}
                               </div>
-                              <span className="text-xs text-muted-foreground bg-background/50 px-1.5 py-0.5 rounded flex-shrink-0">
-                                {part.contextType}
-                              </span>
                             </div>
-                          </div>
-                        );
-                      default:
-                        return null;
-                    }
-                  })}
-                </div>
-              ))
-            )}
-            {status === "submitted" && <Loader />}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
+                          );
+                        default:
+                          return null;
+                      }
+                    })}
+                  </div>
+                ))
+              )}
+              {status === "submitted" && <Loader />}
+            </ConversationContent>
+            <ConversationScrollButton />
+          </Conversation>
+        </div>
       </div>
 
       <div className="p-4">

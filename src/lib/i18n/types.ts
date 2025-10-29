@@ -149,4 +149,5 @@ export interface I18nContextValue {
   language: Language
   t: (key: TranslationKey, params?: Record<string, string | number>) => string
   changeLanguage: (lang: Language) => Promise<void>
+  isChangingLanguage: boolean
 }
