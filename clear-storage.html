@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Host Access Storage</title>
+</head>
+<body>
+    <h1>Clear Host Access Configuration Storage</h1>
+    <button onclick="clearStorage()">Clear Storage Configuration</button>
+    <button onclick="checkStorage()">Check Current Storage</button>
+    <div id="result"></div>
+
+    <script>
+        async function clearStorage() {
+            try {
+                await chrome.storage.local.remove("hostAccessConfig");
+                document.getElementById('result').innerHTML =
+                    '<p style="color: green;">✅ Host access configuration cleared from storage!</p>' +
+                    '<p>The system will now use the configuration from host-access-config.json</p>';
+            } catch (e) {
+                document.getElementById('result').innerHTML =
+                    '<p style="color: red;">❌ Failed to clear storage: ' + e.message + '</p>';
+            }
+        }
+
+        async function checkStorage() {
+            try {
+                const result = await chrome.storage.local.get("hostAccessConfig");
+                document.getElementById('result').innerHTML =
+                    '<p><strong>Current storage state:</strong></p>' +
+                    '<pre>' + JSON.stringify(result, null, 2) + '</pre>';
+            } catch (e) {
+                document.getElementById('result').innerHTML =
+                    '<p style="color: red;">❌ Failed to check storage: ' + e.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

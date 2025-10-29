@@ -1278,10 +1278,17 @@ export class BrowserMcpClient {
   async callTool(name: string, args: any, _messageId?: string) {
     // Check host access for tools that interact with web pages
     const hostCheckResult = await this.checkHostAccessForTool(name, args)
+
+    console.log('🔍 [DEBUG] Tool call host check:', {
+      tool: name,
+      args,
+      hostCheckResult
+    })
+
     if (!hostCheckResult.allowed) {
       return {
         success: false,
-        error: `Host access denied: ${hostCheckResult.reason}`,
+        error: `🚫 Host access denied: ${hostCheckResult.reason}. This host is blocked by the current access configuration.`,
         data: null
       }
     }
@@ -1297,47 +1304,79 @@ export class BrowserMcpClient {
    * Check if a tool requires host access validation and validate it
    */
   private async checkHostAccessForTool(toolName: string, args: any): Promise<{ allowed: boolean; reason?: string }> {
-    // Tools that require host checking
+    // Tools that require host checking - comprehensive list
     const hostCheckingTools = [
-      'create_new_tab',
-      'get_tab_content',
-      'get_current_tab_content',
-      'switch_to_tab',
+      // Tab management tools
       'get_all_tabs',
       'get_current_tab',
+      'switch_to_tab',
+      'create_new_tab',
       'get_tab_info',
       'duplicate_tab',
       'close_tab',
+      'get_tab_content',
+      'get_current_tab_content',
+
+      // Page content tools
       'get_page_metadata',
       'extract_page_text',
       'get_page_links',
+      'get_page_images',
       'search_page_text',
       'get_page_performance',
       'get_page_accessibility',
       'get_interactive_elements',
       'click_element',
+      'summarize_page',
+
+      // Form & input tools
       'fill_input',
       'clear_input',
       'get_input_value',
       'submit_form',
       'get_form_elements',
+
+      // UI interaction tools
       'scroll_to_element',
       'highlight_element',
       'highlight_text_inline',
-      'summarize_page',
+
+      // Window management
       'get_all_windows',
       'get_current_window',
       'switch_to_window',
+      'create_new_window',
+
+      // Tab group management
       'get_all_tab_groups',
+      'create_tab_group',
+
+      // History tools
       'get_recent_history',
       'search_history',
+
+      // Bookmark tools
       'get_all_bookmarks',
       'search_bookmarks',
+
+      // Screenshot tools
       'capture_screenshot',
       'capture_tab_screenshot',
+
+      // Clipboard tools that copy page content
       'copy_current_page_url',
+      'copy_current_page_title',
+      'copy_selected_text',
+      'copy_page_as_markdown',
+      'copy_page_as_text',
       'copy_page_links',
-      'copy_page_metadata'
+      'copy_page_metadata',
+
+      // Download tools that work with page content
+      'download_text_as_markdown',
+      'download_image',
+      'download_chat_images',
+      'download_current_chat_images'
     ]
 
     if (!hostCheckingTools.includes(toolName)) {
@@ -1346,10 +1385,20 @@ export class BrowserMcpClient {
 
     let urlToCheck: string | null = null
 
-    if (toolName === 'create_new_tab') {
+    // Handle different tool types
+    if (toolName === 'create_new_tab' || toolName === 'create_new_window') {
+      // For tools that create new tabs/windows, check the target URL
       urlToCheck = args.url
     } else if (args.tabId) {
       // For tools that work with existing tabs, get the tab's URL
+      try {
+        const tab = await chrome.tabs.get(args.tabId)
+        urlToCheck = tab.url || null
+      } catch (e) {
+        return { allowed: false, reason: `Cannot access tab ${args.tabId}: ${e}` }
+      }
+    } else if (toolName === 'capture_tab_screenshot' && args.tabId) {
+      // Special case for tab screenshot with specific tab ID
       try {
         const tab = await chrome.tabs.get(args.tabId)
         urlToCheck = tab.url || null

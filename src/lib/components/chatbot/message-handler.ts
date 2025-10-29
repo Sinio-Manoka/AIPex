@@ -687,7 +687,7 @@ export class MessageHandler {
       if (!isAllowed) {
         return {
           allowed: false,
-          message: `❌ **Access Denied**: The host "${host}" is not allowed according to your current security settings.\n\n${lastError}\n\nPlease check your host access configuration in the settings panel.`
+          message: `❌ **Access Denied**: ${lastError}`
         };
       }
     }
