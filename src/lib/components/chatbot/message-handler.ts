@@ -917,9 +917,11 @@ export class MessageHandler {
       if (!resp.body || resp.status >= 400) {
         // Create an error assistant message to prevent infinite loop
         const errorMessage =
-          resp.status >= 400
-            ? `API Error: ${resp.status} ${resp.statusText}`
-            : "Failed to get response from API";
+          resp.status === 401
+            ? "Please configure a model and API key to start chatting"
+            : resp.status >= 400
+              ? `API Error: ${resp.status} ${resp.statusText}`
+              : "Failed to get response from API";
 
         this.setMessages((prev) => [
           ...prev,

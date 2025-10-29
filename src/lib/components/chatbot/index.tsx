@@ -16,12 +16,6 @@ import {
   PromptInputBody,
   PromptInputContextTag,
   PromptInputContextTags,
-  PromptInputModelSelect,
-  PromptInputModelSelectContent,
-  PromptInputModelSelectItem,
-  PromptInputModelSelectTrigger,
-  PromptInputModelSelectValue,
-  PromptInputSubmit,
   PromptInputTextarea,
   PromptInputToolbar,
   PromptInputTools,
@@ -57,7 +51,6 @@ import {
   CommandSeparator,
 } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
-import type { ChatStatus } from "ai";
 import { Icon, getContextIcon, getSuggestionIcon } from "~/lib/components/ui/icon";
 import { Fragment, useEffect, useRef, useState } from "react";
 import { models, SYSTEM_PROMPT } from "./constants";
@@ -574,7 +567,7 @@ const ChatBot = () => {
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b px-4 py-2">
+      <div className="flex items-center justify-between px-4 py-2">
         <div className="flex items-center gap-2">
           {/* Theme Toggle Button */}
           <Button
@@ -586,7 +579,7 @@ const ChatBot = () => {
               const nextIndex = (currentIndex + 1) % themes.length;
               setTheme(themes[nextIndex]);
             }}
-            className="w-8 h-8 p-0 border-0 bg-transparent hover:bg-accent"
+            className="w-8 h-8 p-0 border border-border bg-transparent hover:bg-accent"
             title={`Current theme: ${theme || 'system'}`}
           >
             <Icon
@@ -598,7 +591,7 @@ const ChatBot = () => {
 
           {/* Language Selector Button */}
           <Select value={language} onValueChange={(value) => changeLanguage(value as Language)}>
-            <SelectTrigger className="w-auto h-8 px-2 text-xs border-0 bg-transparent hover:bg-accent">
+            <SelectTrigger className="w-auto h-8 px-2 text-xs border border-border bg-transparent hover:bg-accent">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -607,15 +600,13 @@ const ChatBot = () => {
             </SelectContent>
           </Select>
         </div>
-        <div className="text-sm font-medium">{t("common.title")}</div>
         <Button
           variant="ghost"
           size="sm"
           onClick={handleNewChat}
-          className="gap-2"
+          className="w-8 h-8 border border-border"
         >
           <Icon name="plus" size="sm" variant="muted" />
-          {t("common.newChat")}
         </Button>
       </div>
 
@@ -767,7 +758,7 @@ const ChatBot = () => {
         </Conversation>
       </div>
 
-      <div className="border-t p-4">
+      <div className="p-4">
         <PromptInput onSubmit={handleSubmit} className="mt-4" globalDrop multiple>
           <PromptInputBody>
             {/* Context Tags */}
@@ -834,7 +825,7 @@ const ChatBot = () => {
                         : "max-w-0 opacity-0"
                     )}
                   >
-                    {selectedModelName || ""}
+                    {selectedModelName || "models"}
                   </span>
                 </div>
               </Button>

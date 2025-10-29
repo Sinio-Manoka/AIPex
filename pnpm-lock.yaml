@@ -53,6 +53,9 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: ^1.2.2
         version: 1.2.2(@types/react@19.2.0)(react@19.2.0)
+      '@radix-ui/react-visually-hidden':
+        specifier: ^1.2.3
+        version: 1.2.3(@types/react-dom@19.2.0(@types/react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       ahooks:
         specifier: ^3.9.5
         version: 3.9.5(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -86,6 +89,9 @@ importers:
       nanoid:
         specifier: ^5.1.6
         version: 5.1.6
+      phosphor-react:
+        specifier: ^1.4.1
+        version: 1.4.1(react@19.2.0)
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -3353,6 +3359,12 @@ packages:
 
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
+
+  phosphor-react@1.4.1:
+    resolution: {integrity: sha512-gO5j7U0xZrdglTAYDYPACU4xDOFBTJmptrrB/GeR+tHhCZF3nUMyGmV/0hnloKjuTrOmpSFlbfOY78H39rgjUQ==}
+    engines: {node: '>=10'}
+    peerDependencies:
+      react: '>=16'
 
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
@@ -8176,6 +8188,10 @@ snapshots:
   path-type@4.0.0: {}
 
   pathe@2.0.3: {}
+
+  phosphor-react@1.4.1(react@19.2.0):
+    dependencies:
+      react: 19.2.0
 
   picocolors@1.1.1: {}
 
