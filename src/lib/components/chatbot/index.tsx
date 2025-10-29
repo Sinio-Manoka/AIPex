@@ -583,7 +583,7 @@ const ChatBot = () => {
             }}
             onMouseEnter={() => setIsThemeButtonHovered(true)}
             onMouseLeave={() => setIsThemeButtonHovered(false)}
-            className="w-8 h-8 p-0 border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground group"
+            className="w-9 h-9 p-0 border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground group"
             title={`Current theme: ${theme || 'system'}`}
           >
             <Icon
@@ -596,7 +596,7 @@ const ChatBot = () => {
 
           {/* Language Selector Button */}
           <Select value={language} onValueChange={(value) => changeLanguage(value as Language)}>
-            <SelectTrigger className="w-auto h-8 px-2 text-xs border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground">
+            <SelectTrigger className="w-auto h-9 px-2 text-xs border border-border bg-transparent hover:bg-accent text-muted-foreground hover:text-foreground">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
