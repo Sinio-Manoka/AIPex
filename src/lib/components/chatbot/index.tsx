@@ -558,7 +558,6 @@ const ChatBot = () => {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="en">{t("language.en")}</SelectItem>
-              <SelectItem value="zh">{t("language.zh")}</SelectItem>
               <SelectItem value="de">{t("language.de")}</SelectItem>
             </SelectContent>
           </Select>
