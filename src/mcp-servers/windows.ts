@@ -15,18 +15,20 @@ export type SimplifiedWindow = {
  */
 export async function getAllWindows(): Promise<SimplifiedWindow[]> {
   const windows = await chrome.windows.getAll({ populate: true })
-  
-  return windows.map(window => ({
-    id: window.id,
-    focused: window.focused || false,
-    state: window.state || "normal",
-    type: window.type || "normal",
-    left: window.left,
-    top: window.top,
-    width: window.width,
-    height: window.height,
-    tabCount: window.tabs?.length || 0
-  }))
+
+  return windows
+    .filter(window => window.id !== undefined)
+    .map(window => ({
+      id: window.id!,
+      focused: window.focused || false,
+      state: window.state || "normal",
+      type: window.type || "normal",
+      left: window.left,
+      top: window.top,
+      width: window.width,
+      height: window.height,
+      tabCount: window.tabs?.length || 0
+    }))
 }
 
 /**
@@ -34,7 +36,9 @@ export async function getAllWindows(): Promise<SimplifiedWindow[]> {
  */
 export async function getCurrentWindow(): Promise<SimplifiedWindow | null> {
   const window = await chrome.windows.getCurrent({ populate: true })
-  
+
+  if (!window.id) return null
+
   return {
     id: window.id,
     focused: window.focused || false,
@@ -131,7 +135,7 @@ export async function updateWindow(windowId: number, updates: {
   width?: number
   height?: number
   focused?: boolean
-  state?: chrome.windows.WindowState
+  state?: any
 }): Promise<{ success: boolean; error?: string }> {
   try {
     await chrome.windows.update(windowId, updates)
@@ -147,7 +151,9 @@ export async function updateWindow(windowId: number, updates: {
 export async function getWindow(windowId: number): Promise<SimplifiedWindow | null> {
   try {
     const window = await chrome.windows.get(windowId, { populate: true })
-    
+
+    if (!window.id) return null
+
     return {
       id: window.id,
       focused: window.focused || false,
@@ -167,13 +173,13 @@ export async function getWindow(windowId: number): Promise<SimplifiedWindow | nu
 /**
  * Get all windows of a specific type
  */
-export async function getWindowsByType(type: chrome.windows.WindowType): Promise<SimplifiedWindow[]> {
+export async function getWindowsByType(type: string): Promise<SimplifiedWindow[]> {
   const windows = await chrome.windows.getAll({ populate: true })
-  
+
   return windows
-    .filter(window => window.type === type)
+    .filter(window => window.type === type && window.id !== undefined)
     .map(window => ({
-      id: window.id,
+      id: window.id!,
       focused: window.focused || false,
       state: window.state || "normal",
       type: window.type || "normal",
@@ -192,23 +198,23 @@ export async function arrangeWindowsInGrid(columns: number = 2): Promise<{ succe
   try {
     const windows = await chrome.windows.getAll({ populate: true })
     const normalWindows = windows.filter(w => w.type === "normal" && w.state !== "minimized")
-    
+
     if (normalWindows.length === 0) {
       return { success: true }
     }
-    
+
     const screenWidth = window.screen.availWidth
     const screenHeight = window.screen.availHeight
     const windowWidth = Math.floor(screenWidth / columns)
     const windowHeight = Math.floor(screenHeight / Math.ceil(normalWindows.length / columns))
-    
+
     for (let i = 0; i < normalWindows.length; i++) {
       const row = Math.floor(i / columns)
       const col = i % columns
       const left = col * windowWidth
       const top = row * windowHeight
-      
-      await chrome.windows.update(normalWindows[i].id, {
+
+      await chrome.windows.update((normalWindows[i] as any).id, {
         left,
         top,
         width: windowWidth,
@@ -216,7 +222,7 @@ export async function arrangeWindowsInGrid(columns: number = 2): Promise<{ succe
         state: "normal"
       })
     }
-    
+
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -230,20 +236,20 @@ export async function cascadeWindows(): Promise<{ success: boolean; error?: stri
   try {
     const windows = await chrome.windows.getAll({ populate: true })
     const normalWindows = windows.filter(w => w.type === "normal" && w.state !== "minimized")
-    
+
     if (normalWindows.length === 0) {
       return { success: true }
     }
-    
+
     const offset = 30
     const baseWidth = 800
     const baseHeight = 600
-    
+
     for (let i = 0; i < normalWindows.length; i++) {
       const left = i * offset
       const top = i * offset
-      
-      await chrome.windows.update(normalWindows[i].id, {
+
+      await chrome.windows.update((normalWindows[i] as any).id, {
         left,
         top,
         width: baseWidth,
@@ -251,7 +257,7 @@ export async function cascadeWindows(): Promise<{ success: boolean; error?: stri
         state: "normal"
       })
     }
-    
+
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }

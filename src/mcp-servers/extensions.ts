@@ -17,14 +17,14 @@ export async function getAllExtensions(): Promise<{
   try {
     // Check if management permission is available
     if (!chrome.management) {
-      return { 
-        success: false, 
-        error: "Management permission not available. Please check extension permissions." 
+      return {
+        success: false,
+        error: "Management permission not available. Please check extension permissions."
       }
     }
 
     const extensions = await chrome.management.getAll()
-    
+
     const extensionData = extensions.map(ext => ({
       id: ext.id,
       name: ext.name,
@@ -34,12 +34,12 @@ export async function getAllExtensions(): Promise<{
       permissions: ext.permissions || [],
       hostPermissions: ext.hostPermissions || []
     }))
-    
+
     return { success: true, extensions: extensionData }
   } catch (error: any) {
     console.error("Error in getAllExtensions:", error)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error?.message || String(error) || "Failed to get extensions. Check if management permission is granted."
     }
   }
@@ -64,14 +64,14 @@ export async function getExtension(extensionId: string): Promise<{
   try {
     // Check if management permission is available
     if (!chrome.management) {
-      return { 
-        success: false, 
-        error: "Management permission not available. Please check extension permissions." 
+      return {
+        success: false,
+        error: "Management permission not available. Please check extension permissions."
       }
     }
 
     const extension = await chrome.management.get(extensionId)
-    
+
     return {
       success: true,
       extension: {
@@ -86,8 +86,8 @@ export async function getExtension(extensionId: string): Promise<{
     }
   } catch (error: any) {
     console.error("Error in getExtension:", error)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error?.message || String(error) || "Failed to get extension. Check if management permission is granted."
     }
   }
@@ -103,9 +103,9 @@ export async function setExtensionEnabled(extensionId: string, enabled: boolean)
   try {
     // Check if management permission is available
     if (!chrome.management) {
-      return { 
-        success: false, 
-        error: "Management permission not available. Please check extension permissions." 
+      return {
+        success: false,
+        error: "Management permission not available. Please check extension permissions."
       }
     }
 
@@ -113,8 +113,8 @@ export async function setExtensionEnabled(extensionId: string, enabled: boolean)
     return { success: true }
   } catch (error: any) {
     console.error("Error in setExtensionEnabled:", error)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error?.message || String(error) || "Failed to set extension enabled. Check if management permission is granted."
     }
   }
@@ -130,9 +130,9 @@ export async function uninstallExtension(extensionId: string): Promise<{
   try {
     // Check if management permission is available
     if (!chrome.management) {
-      return { 
-        success: false, 
-        error: "Management permission not available. Please check extension permissions." 
+      return {
+        success: false,
+        error: "Management permission not available. Please check extension permissions."
       }
     }
 
@@ -140,8 +140,8 @@ export async function uninstallExtension(extensionId: string): Promise<{
     return { success: true }
   } catch (error: any) {
     console.error("Error in uninstallExtension:", error)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error?.message || String(error) || "Failed to uninstall extension. Check if management permission is granted."
     }
   }
@@ -161,15 +161,14 @@ export async function getExtensionPermissions(extensionId: string): Promise<{
   try {
     // Check if management permission is available
     if (!chrome.management) {
-      return { 
-        success: false, 
-        error: "Management permission not available. Please check extension permissions." 
+      return {
+        success: false,
+        error: "Management permission not available. Please check extension permissions."
       }
     }
 
-    const permissions = await chrome.management.getPermissionWarningsById(extensionId)
     const extension = await chrome.management.get(extensionId)
-    
+
     return {
       success: true,
       permissions: {
@@ -179,8 +178,8 @@ export async function getExtensionPermissions(extensionId: string): Promise<{
     }
   } catch (error: any) {
     console.error("Error in getExtensionPermissions:", error)
-    return { 
-      success: false, 
+    return {
+      success: false,
       error: error?.message || String(error) || "Failed to get extension permissions. Check if management permission is granted."
     }
   }

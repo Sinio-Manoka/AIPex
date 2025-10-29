@@ -27,7 +27,6 @@ const logoWip = chrome.runtime.getURL("assets/logo-wip.png")
 const logoCalendar = chrome.runtime.getURL("assets/logo-calendar.png")
 const logoKeep = chrome.runtime.getURL("assets/logo-keep.png")
 const logoMeet = chrome.runtime.getURL("assets/logo-meet.png")
-const globeSvg = chrome.runtime.getURL("assets/globe.svg")
 
 // background.ts is responsible for listening to extension-level shortcuts (such as Command/Ctrl+M),
 // and notifies the content script (content.tsx) via chrome.tabs.sendMessage
@@ -39,33 +38,12 @@ let newtaburl = ""
 // Track active streaming requests for stop functionality
 const activeStreams = new Map<string, AbortController>()
 
-// Check if AI grouping is available
-async function isAIGroupingAvailable() {
-  try {
-    const defaultProvider = providerManager.getDefaultProvider();
-    if (!defaultProvider) return false;
-
-    const aiToken = providerManager.getProviderKey(defaultProvider);
-    return !!aiToken;
-  } catch (error) {
-    console.error('Error checking AI grouping availability:', error);
-    return false;
-  }
-}
-
 // Todo List management functions
 interface TodoItem {
   id: string
   text: string
   completed: boolean
   timestamp: number
-}
-
-interface TodoList {
-  items: TodoItem[]
-  taskId: string
-  createdAt: number
-  lastUpdated: number
 }
 
 // Parse TODO list from AI response
@@ -337,7 +315,7 @@ chrome.commands.onCommand.addListener((command) => {
         chrome.tabs.sendMessage(response.id!, { request: "open-aipex" })
       } else {
         // Open a new tab with our custom new tab page
-        chrome.tabs.create({ url: "chrome://newtab" }).then((tab) => {
+        chrome.tabs.create({ url: "chrome://newtab" }).then(() => {
           console.log("open-aipex-new-tab")
           newtaburl = response?.url || ""
           chrome.tabs.remove(response.id!)
@@ -372,11 +350,11 @@ const resetOmni = async () => {
 }
 
 // Tab updates - only reset actions, no auto-grouping
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+chrome.tabs.onUpdated.addListener(async (_tabId, _changeInfo, _tab) => {
   resetOmni()
 })
 
-chrome.tabs.onCreated.addListener(async (tab) => {
+chrome.tabs.onCreated.addListener(async (_tab) => {
   resetOmni()
 })
 
@@ -396,22 +374,6 @@ const getTabs = async () => {
       ; (tab as any).type = "tab"
   })
   actions = tabs.concat(actions)
-}
-
-// Get all bookmarks
-const getBookmarks = async () => {
-  const process_bookmark = (bookmarks: any[]) => {
-    for (const bookmark of bookmarks) {
-      if (bookmark.url) {
-        actions.push({ title: bookmark.title, desc: "Bookmark", id: bookmark.id, url: bookmark.url, type: "bookmark", action: "bookmark", emoji: true, emojiChar: "⭐️", keycheck: false })
-      }
-      if (bookmark.children) {
-        process_bookmark(bookmark.children)
-      }
-    }
-  }
-  const bookmarks = await chrome.bookmarks.getRecent(100)
-  process_bookmark(bookmarks)
 }
 
 // Get all history
@@ -442,12 +404,12 @@ const goBack = (tab: any) => {
 const goForward = (tab: any) => {
   chrome.tabs.goForward(tab.id)
 }
-const duplicateTab = (tab: any) => {
+const duplicateTab = (_tab: any) => {
   getCurrentTab().then((response) => {
     chrome.tabs.duplicate(response.id!)
   })
 }
-const createBookmark = (tab: any) => {
+const createBookmark = (_tab: any) => {
   getCurrentTab().then((response) => {
     chrome.bookmarks.create({ title: response.title, url: response.url })
   })
@@ -528,7 +490,7 @@ const ungroupAllTabs = async () => {
     // For each group, get its tabs and ungroup them
     for (const group of groups) {
       const tabs = await chrome.tabs.query({ groupId: group.id })
-      const tabIds = tabs.map(tab => tab.id).filter(id => id !== undefined)
+      const tabIds = tabs.map(tab => tab.id).filter(id => id !== undefined) as number[]
 
       if (tabIds.length > 0) {
         chrome.tabs.ungroup(tabIds)
@@ -561,7 +523,7 @@ const ungroupAllTabs = async () => {
 }
 
 // OpenAI chat completion helper
-async function chatCompletion(messages: string | { role: string, content: string }[], stream = true, options = {}, messageId?: string) {
+async function chatCompletion(messages: string | { role: string, content: string }[], _stream = true, options = {}, messageId?: string) {
   const storage = new Storage()
 
   // 优先使用存储配置，如果存储配置不存在则使用环境变量，最后使用默认值
@@ -1956,7 +1918,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       ; (async () => {
         try {
-          const { prompt, context, tools, messageId, referencedTabs } = message
+          const { prompt, context, tools: _tools, messageId, referencedTabs } = message
 
           // Build conversation messages with context
           let conversationMessages: { role: string, content: string }[] = []

@@ -313,7 +313,7 @@ export class MessageHandler {
           // Case 3: All tools have completed -> send results back to LLM
           const allToolParts = lastMessage.parts.filter((part) => part.type === "tool");
           const completedToolParts = allToolParts.filter(
-            (part) => part.state === "output-available" || part.state === "output-error"
+            (part) => (part as any).state === "output-available" || (part as any).state === "output-error"
           );
 
           console.log(
@@ -323,7 +323,7 @@ export class MessageHandler {
             "completed:",
             completedToolParts.length,
             "states:",
-            allToolParts.map((p) => p.state)
+            allToolParts.map((p) => (p as any).state)
           );
 
           if (allToolParts.length > 0 && allToolParts.length === completedToolParts.length) {
@@ -1035,7 +1035,7 @@ export class MessageHandler {
 
                   // Try to parse and execute if we have complete arguments
                   try {
-                    const parsedArgs = JSON.parse(pendingCall.arguments);
+                    const parsedArgs = JSON.parse(pendingCall!.arguments);
 
                     // Create or update assistant message with tool call
                     this.setMessages((prev) => {
@@ -1054,14 +1054,14 @@ export class MessageHandler {
                       // Find or create tool part
                       let toolPart = assistantMsg.parts.find(
                         (part): part is UIToolPart =>
-                          part.type === "tool" && part.toolCallId === pendingCall.id
+                          part.type === "tool" && part.toolCallId === pendingCall!.id
                       );
 
                       if (!toolPart) {
                         toolPart = {
                           type: "tool",
-                          toolName: pendingCall.name,
-                          toolCallId: pendingCall.id,
+                          toolName: pendingCall!.name,
+                          toolCallId: pendingCall!.id,
                           input: parsedArgs,
                           state: "input-available",
                         };

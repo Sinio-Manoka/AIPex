@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React from "react"
 import { MarkdownRenderer } from "./index"
 import { useTranslation } from "~/lib/i18n/hooks"
 
@@ -31,7 +31,7 @@ export interface PlanningAgentProps {
   onStepComplete?: (stepIndex: number) => void
 }
 
-const PlanningAgent: React.FC<PlanningAgentProps> = ({ steps, isActive, onStepComplete }) => {
+const PlanningAgent: React.FC<PlanningAgentProps> = ({ steps, isActive, onStepComplete: _onStepComplete }) => {
   const { t } = useTranslation()
   const getStepIcon = (type: PlanningStep['type']) => {
     switch (type) {
@@ -128,24 +128,22 @@ const PlanningAgent: React.FC<PlanningAgentProps> = ({ steps, isActive, onStepCo
         {steps.map((step, index) => (
           <div
             key={index}
-            className={`p-3 rounded-lg border transition-all duration-200 ${getStepColor(step.type)} ${
-              step.status === 'in-progress' ? 'ring-2 ring-blue-300' : ''
-            }`}
+            className={`p-3 rounded-lg border transition-all duration-200 ${getStepColor(step.type)} ${step.status === 'in-progress' ? 'ring-2 ring-blue-300' : ''
+              }`}
           >
             <div className="flex items-start">
               <div className="flex-shrink-0 mr-3">
-                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm ${
-                  step.status === 'completed' ? 'bg-green-100 text-green-600' :
-                  step.status === 'failed' ? 'bg-red-100 text-red-600' :
-                  step.status === 'in-progress' ? 'bg-blue-100 text-blue-600 animate-pulse' :
-                  'bg-gray-100 text-gray-600'
-                }`}>
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm ${step.status === 'completed' ? 'bg-green-100 text-green-600' :
+                    step.status === 'failed' ? 'bg-red-100 text-red-600' :
+                      step.status === 'in-progress' ? 'bg-blue-100 text-blue-600 animate-pulse' :
+                        'bg-gray-100 text-gray-600'
+                  }`}>
                   {step.status === 'completed' ? '✓' :
-                   step.status === 'failed' ? '✗' :
-                   step.status === 'in-progress' ? '⟳' : index + 1}
+                    step.status === 'failed' ? '✗' :
+                      step.status === 'in-progress' ? '⟳' : index + 1}
                 </div>
               </div>
-              
+
               <div className="flex-1 min-w-0">
                 <div className="flex items-center mb-1">
                   <span className="text-lg mr-2">{getStepIcon(step.type)}</span>
@@ -153,17 +151,16 @@ const PlanningAgent: React.FC<PlanningAgentProps> = ({ steps, isActive, onStepCo
                     {getStepTitle(step.type)}
                   </span>
                   {step.status && (
-                    <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                      step.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      step.status === 'failed' ? 'bg-red-100 text-red-700' :
-                      step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
+                    <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${step.status === 'completed' ? 'bg-green-100 text-green-700' :
+                        step.status === 'failed' ? 'bg-red-100 text-red-700' :
+                          step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                            'bg-gray-100 text-gray-700'
+                      }`}>
                       {step.status}
                     </span>
                   )}
                 </div>
-                
+
                 <div className="text-sm text-gray-700">
                   <MarkdownRenderer content={step.content} />
                 </div>
@@ -180,7 +177,7 @@ const PlanningAgent: React.FC<PlanningAgentProps> = ({ steps, isActive, onStepCo
                     )}
                     {step.toolCall.result && (
                       <div className="text-xs text-green-600">
-                        Result: {typeof step.toolCall.result === 'string' 
+                        Result: {typeof step.toolCall.result === 'string'
                           ? step.toolCall.result.slice(0, 200) + (step.toolCall.result.length > 200 ? '...' : '')
                           : JSON.stringify(step.toolCall.result, null, 2).slice(0, 200) + '...'
                         }

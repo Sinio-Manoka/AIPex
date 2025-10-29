@@ -17,18 +17,20 @@ export async function getAllSessions(): Promise<{
 }> {
   try {
     const sessions = await chrome.sessions.getRecentlyClosed()
-    
-    const sessionData = sessions.map(session => ({
-      sessionId: session.sessionId,
-      tab: session.tab ? {
-        id: session.tab.id || 0,
-        windowId: session.tab.windowId || 0,
-        title: session.tab.title || "",
-        url: session.tab.url || ""
-      } : null,
-      lastModified: session.lastModified || 0
-    }))
-    
+
+    const sessionData = sessions
+      .filter((session: any) => session.tab)
+      .map((session: any) => ({
+        sessionId: session.sessionId,
+        tab: {
+          id: session.tab.id || 0,
+          windowId: session.tab.windowId || 0,
+          title: session.tab.title || '',
+          url: session.tab.url || ''
+        },
+        lastModified: session.lastModified || 0
+      }))
+
     return { success: true, sessions: sessionData }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -53,8 +55,8 @@ export async function getSession(sessionId: string): Promise<{
   error?: string
 }> {
   try {
-    const session = await chrome.sessions.restore(sessionId)
-    
+    const session = await chrome.sessions.restore(sessionId) as any
+
     return {
       success: true,
       session: {
@@ -64,7 +66,12 @@ export async function getSession(sessionId: string): Promise<{
           windowId: session.tab.windowId || 0,
           title: session.tab.title || "",
           url: session.tab.url || ""
-        } : null,
+        } : {
+          id: 0,
+          windowId: 0,
+          title: "",
+          url: ""
+        },
         lastModified: session.lastModified || 0
       }
     }
@@ -90,8 +97,8 @@ export async function restoreSession(sessionId: string): Promise<{
   error?: string
 }> {
   try {
-    const session = await chrome.sessions.restore(sessionId)
-    
+    const session = await chrome.sessions.restore(sessionId) as any
+
     return {
       success: true,
       session: {
@@ -101,7 +108,12 @@ export async function restoreSession(sessionId: string): Promise<{
           windowId: session.tab.windowId || 0,
           title: session.tab.title || "",
           url: session.tab.url || ""
-        } : null
+        } : {
+          id: 0,
+          windowId: 0,
+          title: "",
+          url: ""
+        },
       }
     }
   } catch (error: any) {
@@ -123,8 +135,9 @@ export async function getCurrentDevice(): Promise<{
   error?: string
 }> {
   try {
-    const device = await chrome.sessions.getDeviceInfo()
-    
+    const devices = await chrome.sessions.getDevices()
+    const device = devices[0] as any // Get the first device
+
     return {
       success: true,
       device: {
@@ -153,16 +166,16 @@ export async function getAllDevices(): Promise<{
   error?: string
 }> {
   try {
-    const devices = await chrome.sessions.getDeviceInfo()
-    
+    const devices = await chrome.sessions.getDevices()
+
     return {
       success: true,
-      devices: [{
-        id: devices.id,
-        name: devices.name,
-        type: devices.type,
-        os: devices.os
-      }]
+      devices: devices.map((device: any) => ({
+        id: device.id,
+        name: device.name,
+        type: device.type,
+        os: device.os
+      }))
     }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }

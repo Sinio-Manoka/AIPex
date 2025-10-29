@@ -66,7 +66,7 @@ export async function getTabInfo(tabId: number): Promise<SimplifiedTab | null> {
   try {
     const tab = await chrome.tabs.get(tabId)
     if (!tab || typeof tab.id !== "number") return null
-    
+
     return {
       id: tab.id,
       index: tab.index || 0,
@@ -85,7 +85,7 @@ export async function getTabInfo(tabId: number): Promise<SimplifiedTab | null> {
 export async function duplicateTab(tabId: number): Promise<{ success: boolean; newTabId?: number; error?: string }> {
   try {
     const tab = await chrome.tabs.duplicate(tabId)
-    return { success: true, newTabId: tab.id || undefined }
+    return { success: true, newTabId: tab?.id }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
   }

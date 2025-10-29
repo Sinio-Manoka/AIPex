@@ -1,4 +1,3 @@
-import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import type { FC, ReactNode } from "react";
 
 interface AIPexRuntimeProviderProps {

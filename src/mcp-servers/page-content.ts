@@ -17,8 +17,8 @@ export async function getPageMetadata(): Promise<{
     target: { tabId: tab.id },
     func: () => {
       const getMetaContent = (name: string, property?: string) => {
-        const selector = property 
-          ? `meta[property="${property}"]` 
+        const selector = property
+          ? `meta[property="${property}"]`
           : `meta[name="${name}"]`
         const element = document.querySelector(selector) as HTMLMetaElement
         return element?.content || undefined
@@ -31,8 +31,8 @@ export async function getPageMetadata(): Promise<{
         keywords: getMetaContent("keywords"),
         author: getMetaContent("author") || getMetaContent("og:author", "og:author"),
         ogImage: getMetaContent("og:image", "og:image"),
-        favicon: (document.querySelector('link[rel="icon"]') as HTMLLinkElement)?.href || 
-                (document.querySelector('link[rel="shortcut icon"]') as HTMLLinkElement)?.href
+        favicon: (document.querySelector('link[rel="icon"]') as HTMLLinkElement)?.href ||
+          (document.querySelector('link[rel="shortcut icon"]') as HTMLLinkElement)?.href
       }
     }
   })
@@ -78,13 +78,13 @@ export async function extractPageText(): Promise<{
       // Get main content areas without modifying DOM
       const mainContent = document.querySelector('main, article, .content, .post, .entry') || document.body
       const text = getTextContent(mainContent)
-      
+
       // Clean up text
       const cleanedText = text
         .replace(/\s+/g, ' ')
         .replace(/\n+/g, '\n')
         .trim()
-      
+
       const wordCount = cleanedText.split(/\s+/).length
       const readingTime = Math.ceil(wordCount / 200) // Average reading speed
 
@@ -190,7 +190,7 @@ export async function searchPageText(query: string): Promise<{
     func: (searchQuery: string) => {
       const text = document.body.innerText || document.body.textContent || ""
       const matches: Array<{ text: string; context: string; index: number }> = []
-      
+
       if (!searchQuery || !text) {
         return { title: document.title || "", url: location.href, matches, totalMatches: 0 }
       }
@@ -198,12 +198,12 @@ export async function searchPageText(query: string): Promise<{
       const regex = new RegExp(searchQuery, 'gi')
       let match
       let count = 0
-      
+
       while ((match = regex.exec(text)) !== null && count < 50) {
         const start = Math.max(0, match.index - 50)
         const end = Math.min(text.length, match.index + match[0].length + 50)
         const context = text.substring(start, end)
-        
+
         matches.push({
           text: match[0],
           context: context.replace(/\n/g, ' ').trim(),
@@ -244,7 +244,7 @@ export async function getPagePerformance(): Promise<{
     func: () => {
       const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming
       const paint = performance.getEntriesByType('paint')
-      
+
       return {
         title: document.title || "",
         url: location.href,
@@ -352,19 +352,19 @@ export async function getInteractiveElements(): Promise<{
 
       const isVisible = (element: Element): boolean => {
         const style = window.getComputedStyle(element)
-        return style.display !== 'none' && 
-               style.visibility !== 'hidden' && 
-               style.opacity !== '0' &&
-               (element as HTMLElement).offsetWidth > 0 && 
-               (element as HTMLElement).offsetHeight > 0
+        return style.display !== 'none' &&
+          style.visibility !== 'hidden' &&
+          style.opacity !== '0' &&
+          (element as HTMLElement).offsetWidth > 0 &&
+          (element as HTMLElement).offsetHeight > 0
       }
 
       const isClickable = (element: Element): boolean => {
         const tag = element.tagName.toLowerCase()
         return ['a', 'button', 'input', 'select', 'textarea'].includes(tag) ||
-               (element as HTMLElement).onclick !== null ||
-               element.getAttribute('role') === 'button' ||
-               element.getAttribute('tabindex') !== null
+          (element as HTMLElement).onclick !== null ||
+          element.getAttribute('role') === 'button' ||
+          element.getAttribute('tabindex') !== null
       }
 
       // Optimized approach: use specific selectors for better performance
@@ -378,7 +378,7 @@ export async function getInteractiveElements(): Promise<{
         '[onclick]',
         '[tabindex]:not([tabindex="-1"])'
       ]
-      
+
       let allElements: Element[] = []
       for (const selector of selectors) {
         try {
@@ -388,7 +388,7 @@ export async function getInteractiveElements(): Promise<{
           continue
         }
       }
-      
+
       // Remove duplicates and limit to reasonable number
       const uniqueElements = [...new Set(allElements)].slice(0, 100)
 
@@ -405,13 +405,13 @@ export async function getInteractiveElements(): Promise<{
 
       uniqueElements.forEach((element) => {
         const tag = element.tagName.toLowerCase()
-        const text = element.textContent?.trim() || 
-                    (element as HTMLInputElement).placeholder ||
-                    (element as HTMLInputElement).value ||
-                    element.getAttribute('aria-label') ||
-                    element.getAttribute('title') ||
-                    ''
-        
+        const text = element.textContent?.trim() ||
+          (element as HTMLInputElement).placeholder ||
+          (element as HTMLInputElement).value ||
+          element.getAttribute('aria-label') ||
+          element.getAttribute('title') ||
+          ''
+
         if (text && isVisible(element)) {
           interactiveElements.push({
             type: tag,
@@ -478,7 +478,7 @@ export async function clickElement(selector: string): Promise<{
 
         // Click the element
         (element as HTMLElement).click()
-        
+
         return {
           success: true,
           message: `Successfully clicked element with selector "${selector}"`,
@@ -538,13 +538,13 @@ export async function summarizePage(): Promise<{
       // Get main content areas without modifying DOM
       const mainContent = document.querySelector('main, article, .content, .post, .entry') || document.body
       const text = getTextContent(mainContent)
-      
+
       // Clean up text
       const cleanedText = text
         .replace(/\s+/g, ' ')
         .replace(/\n+/g, '\n')
         .trim()
-      
+
       const wordCount = cleanedText.split(/\s+/).length
       const readingTime = Math.ceil(wordCount / 200) // Average reading speed
 
@@ -580,7 +580,7 @@ export async function summarizePage(): Promise<{
       const keyPoints = [...headings, ...paragraphs].slice(0, 8)
 
       // Create a simple summary
-      const summary = cleanedText.length > 500 
+      const summary = cleanedText.length > 500
         ? cleanedText.substring(0, 500) + "..."
         : cleanedText
 
@@ -650,11 +650,11 @@ export async function fillInput(selector: string, text: string): Promise<{
         // Focus and fill the input
         element.focus()
         element.value = text
-        
+
         // Trigger input and change events to simulate user input
         element.dispatchEvent(new Event('input', { bubbles: true }))
         element.dispatchEvent(new Event('change', { bubbles: true }))
-        
+
         return {
           success: true,
           message: `Successfully filled input "${selector}" with text: "${text}"`,
@@ -716,11 +716,11 @@ export async function clearInput(selector: string): Promise<{
         // Focus and clear the input
         element.focus()
         element.value = ''
-        
+
         // Trigger input and change events
         element.dispatchEvent(new Event('input', { bubbles: true }))
         element.dispatchEvent(new Event('change', { bubbles: true }))
-        
+
         return {
           success: true,
           message: `Successfully cleared input "${selector}"`,
@@ -841,7 +841,7 @@ export async function submitForm(selector: string): Promise<{
 
         // Submit the form
         form.submit()
-        
+
         return {
           success: true,
           message: `Successfully submitted form "${selector}"`,
@@ -892,21 +892,21 @@ export async function getFormElements(): Promise<{
     func: () => {
       try {
         const forms = Array.from(document.querySelectorAll('form'))
-        
+
         const formData = forms.map((form, formIndex) => {
           const inputs = Array.from(form.querySelectorAll('input, textarea, select'))
-          
+
           const inputData = inputs.map((input, inputIndex) => {
-                         const element = input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-             return {
-               type: element.type || element.tagName.toLowerCase(),
-               name: element.name || '',
-               id: element.id || '',
-               placeholder: (element as HTMLInputElement | HTMLTextAreaElement).placeholder || '',
-               value: element.value || '',
-               required: element.required || false,
-               selector: `form:nth-of-type(${formIndex + 1}) ${element.tagName.toLowerCase()}:nth-of-type(${inputIndex + 1})`
-             }
+            const element = input as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+            return {
+              type: element.type || element.tagName.toLowerCase(),
+              name: element.name || '',
+              id: element.id || '',
+              placeholder: (element as HTMLInputElement | HTMLTextAreaElement).placeholder || '',
+              value: element.value || '',
+              required: element.required || false,
+              selector: `form:nth-of-type(${formIndex + 1}) ${element.tagName.toLowerCase()}:nth-of-type(${inputIndex + 1})`
+            }
           })
 
           return {
@@ -978,7 +978,7 @@ export async function scrollToElement(selector: string): Promise<{
         // Calculate scroll position to center the element
         const viewportHeight = window.innerHeight
         const viewportWidth = window.innerWidth
-        
+
         const scrollX = window.scrollX + elementCenter.x - viewportWidth / 2
         const scrollY = window.scrollY + elementCenter.y - viewportHeight / 2
 
@@ -993,9 +993,9 @@ export async function scrollToElement(selector: string): Promise<{
         const elementInfo = {
           tagName: element.tagName.toLowerCase(),
           text: element.textContent?.trim()?.substring(0, 100) || '',
-          position: { 
-            x: rect.left + window.scrollX, 
-            y: rect.top + window.scrollY 
+          position: {
+            x: rect.left + window.scrollX,
+            y: rect.top + window.scrollY
           }
         }
 
@@ -1070,7 +1070,7 @@ export async function highlightElement(selector: string, options?: {
         const persistHighlight = options.persist !== false // changed to default true
 
         // Helper function to convert hex to rgb
-        const hexToRgb = (hex: string): {r: number, g: number, b: number} | null => {
+        const hexToRgb = (hex: string): { r: number, g: number, b: number } | null => {
           const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
           return result ? {
             r: parseInt(result[1], 16),
@@ -1079,33 +1079,25 @@ export async function highlightElement(selector: string, options?: {
           } : null
         }
 
-        // Convert RGB to hex
-        const rgbToHex = (r: number, g: number, b: number): string => {
-          return '#' + [r, g, b].map(x => {
-            const hex = Math.round(x).toString(16)
-            return hex.length === 1 ? '0' + hex : hex
-          }).join('')
-        }
-
         // Parse CSS color string to RGB
-        const parseColor = (colorStr: string): {r: number, g: number, b: number} | null => {
+        const parseColor = (colorStr: string): { r: number, g: number, b: number } | null => {
           if (!colorStr || colorStr === 'transparent') return null
-          
+
           // Handle hex colors
           if (colorStr.startsWith('#')) {
             return hexToRgb(colorStr)
           }
-          
+
           // Handle rgb/rgba colors
           const rgbMatch = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
           if (rgbMatch) {
             return {
               r: parseInt(rgbMatch[1]),
-              g: parseInt(rgbMatch[2]), 
+              g: parseInt(rgbMatch[2]),
               b: parseInt(rgbMatch[3])
             }
           }
-          
+
           return null
         }
 
@@ -1119,7 +1111,7 @@ export async function highlightElement(selector: string, options?: {
         }
 
         // Calculate contrast ratio between two colors
-        const getContrastRatio = (color1: {r: number, g: number, b: number}, color2: {r: number, g: number, b: number}): number => {
+        const getContrastRatio = (color1: { r: number, g: number, b: number }, color2: { r: number, g: number, b: number }): number => {
           const lum1 = getLuminance(color1.r, color1.g, color1.b)
           const lum2 = getLuminance(color2.r, color2.g, color2.b)
           const brightest = Math.max(lum1, lum2)
@@ -1128,9 +1120,9 @@ export async function highlightElement(selector: string, options?: {
         }
 
         // Get the dominant colors of an element
-        const getElementColors = (el: HTMLElement): {background: {r: number, g: number, b: number} | null, text: {r: number, g: number, b: number} | null} => {
+        const getElementColors = (el: HTMLElement): { background: { r: number, g: number, b: number } | null, text: { r: number, g: number, b: number } | null } => {
           const computedStyle = window.getComputedStyle(el)
-          
+
           // Get background color, walk up the DOM tree if transparent
           let bgColor = null
           let currentEl = el
@@ -1142,23 +1134,23 @@ export async function highlightElement(selector: string, options?: {
             }
             currentEl = currentEl.parentElement as HTMLElement
           }
-          
+
           // Default to white background if none found
           if (!bgColor) {
-            bgColor = {r: 255, g: 255, b: 255}
+            bgColor = { r: 255, g: 255, b: 255 }
           }
-          
+
           // Get text color
           let textColor = parseColor(computedStyle.color)
           if (!textColor) {
-            textColor = {r: 0, g: 0, b: 0} // Default to black text
+            textColor = { r: 0, g: 0, b: 0 } // Default to black text
           }
-          
-          return {background: bgColor, text: textColor}
+
+          return { background: bgColor, text: textColor }
         }
 
         // Generate high contrast color candidates
-        const getHighContrastColors = (baseColor: {r: number, g: number, b: number}): string[] => {
+        const getHighContrastColors = (baseColor: { r: number, g: number, b: number }): string[] => {
           const candidates = [
             '#FF0000', // Bright Red
             '#00FF00', // Bright Green  
@@ -1183,35 +1175,35 @@ export async function highlightElement(selector: string, options?: {
             '#FFFFFF', // White
             '#000000', // Black
           ]
-          
+
           return candidates.map(hex => {
             const rgb = hexToRgb(hex)!
             const contrast = getContrastRatio(baseColor, rgb)
             return { color: hex, contrast }
           })
-          .filter(item => item.contrast >= 3.0) // Only include colors with good contrast
-          .sort((a, b) => b.contrast - a.contrast) // Sort by highest contrast first
-          .map(item => item.color)
+            .filter(item => item.contrast >= 3.0) // Only include colors with good contrast
+            .sort((a, b) => b.contrast - a.contrast) // Sort by highest contrast first
+            .map(item => item.color)
         }
 
         // Auto-select the best highlight color
         const getOptimalHighlightColor = (element: HTMLElement): string => {
           const colors = getElementColors(element)
-          const baseColor = colors.background || {r: 255, g: 255, b: 255}
-          
+          const baseColor = colors.background || { r: 255, g: 255, b: 255 }
+
           const candidates = getHighContrastColors(baseColor)
-          
+
           if (candidates.length === 0) {
             // Fallback if no good contrast found
             return '#FF0000'
           }
-          
+
           // Prefer vibrant colors with very high contrast (>7.0 for AAA level)
           const highContrastCandidates = candidates.filter(color => {
             const rgb = hexToRgb(color)!
             return getContrastRatio(baseColor, rgb) >= 7.0
           })
-          
+
           if (highContrastCandidates.length > 0) {
             // Among high contrast colors, avoid pure black/white unless necessary
             for (const candidate of highContrastCandidates) {
@@ -1221,7 +1213,7 @@ export async function highlightElement(selector: string, options?: {
             }
             return highContrastCandidates[0]
           }
-          
+
           // Use the best available contrast (minimum 3.0)
           return candidates[0] || '#FF0000'
         }
@@ -1248,9 +1240,6 @@ export async function highlightElement(selector: string, options?: {
         // Create unique highlight ID
         const highlightId = `aipex-highlight-${Date.now()}`
         element.setAttribute('data-highlight-id', highlightId)
-
-        // Get element position for overlay calculations
-        const elementRect = element.getBoundingClientRect()
 
         // Insert CSS styles if not already present
         if (!document.getElementById('aipex-highlight-styles')) {
@@ -1285,9 +1274,9 @@ export async function highlightElement(selector: string, options?: {
 
         // Apply shadow highlight style
         element.classList.add('aipex-highlighted', 'aipex-highlight-shadow', intensity)
-        
+
         if (highlightColor !== '#00d4ff') {
-          const rgb = hexToRgb(highlightColor) || {r: 0, g: 212, b: 255}
+          const rgb = hexToRgb(highlightColor) || { r: 0, g: 212, b: 255 }
           const intensityValues = {
             subtle: `drop-shadow(0 0 8px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5))`,
             normal: `drop-shadow(0 0 15px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.8))`,
@@ -1305,10 +1294,10 @@ export async function highlightElement(selector: string, options?: {
             Object.entries(originalStyles).forEach(([property, value]) => {
               (element.style as any)[property] = value
             })
-            
+
             // Remove highlight classes
             element.classList.remove('aipex-highlighted', 'aipex-highlight-shadow', 'subtle', 'normal', 'strong')
-            
+
             element.removeAttribute('data-highlight-id')
           }, highlightDuration)
         }
@@ -1318,9 +1307,9 @@ export async function highlightElement(selector: string, options?: {
         const elementInfo = {
           tagName: element.tagName.toLowerCase(),
           text: element.textContent?.trim()?.substring(0, 100) || '',
-          position: { 
-            x: rect.left + window.scrollX, 
-            y: rect.top + window.scrollY 
+          position: {
+            x: rect.left + window.scrollX,
+            y: rect.top + window.scrollY
           },
           size: {
             width: rect.width,
@@ -1451,7 +1440,7 @@ export async function highlightTextInline(selector: string, searchText: string, 
           // Replace the text node with highlighted HTML
           const wrapper = document.createElement('span')
           wrapper.innerHTML = highlightedText
-          
+
           if (textNode.parentNode) {
             textNode.parentNode.insertBefore(wrapper, textNode)
             textNode.parentNode.removeChild(textNode)
@@ -1471,16 +1460,16 @@ export async function highlightTextInline(selector: string, searchText: string, 
                 // Skip script, style, and already highlighted content
                 const parent = node.parentElement
                 if (!parent) return NodeFilter.FILTER_REJECT
-                
+
                 const tagName = parent.tagName.toLowerCase()
                 if (['script', 'style', 'noscript'].includes(tagName)) {
                   return NodeFilter.FILTER_REJECT
                 }
-                
+
                 if (parent.classList.contains('aipex-text-highlight')) {
                   return NodeFilter.FILTER_REJECT
                 }
-                
+
                 return NodeFilter.FILTER_ACCEPT
               }
             }
@@ -1580,7 +1569,7 @@ export async function benchmarkInteractiveElements(): Promise<{
           '[onclick]',
           '[tabindex]:not([tabindex="-1"])'
         ]
-        
+
         let allElements: Element[] = []
         for (const selector of selectors) {
           try {
@@ -1590,7 +1579,7 @@ export async function benchmarkInteractiveElements(): Promise<{
             continue
           }
         }
-        
+
         const uniqueElements = [...new Set(allElements)].slice(0, 100)
         return uniqueElements.slice(0, 50)
       })

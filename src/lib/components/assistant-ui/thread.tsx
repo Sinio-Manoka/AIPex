@@ -23,14 +23,14 @@ const SendStopButton: FC<SendStopButtonProps> = ({
 }) => {
   const { t } = useTranslation()
   const isDisabled = !hasInput;
-  
+
   if (isLoading) {
     // Stop Button
     return (
       <button
         onClick={onStop}
         className="flex items-center justify-center gap-2 rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl font-semibold border-2"
-        style={{ 
+        style={{
           height: `${height}px`,
           minHeight: '44px',
           width: '100px',
@@ -49,67 +49,66 @@ const SendStopButton: FC<SendStopButtonProps> = ({
         title={t("tooltip.stopResponse")}
       >
         {/* Stop Icon - Simple square */}
-        <div 
-          style={{ 
-            width: '16px', 
+        <div
+          style={{
+            width: '16px',
             height: '16px',
             backgroundColor: '#6b7280',
             borderRadius: '2px'
           }}
         />
-        <span style={{ 
-          color: '#374151 !important', 
-          fontSize: '14px', 
-          fontWeight: '500' 
+        <span style={{
+          color: '#374151 !important',
+          fontSize: '14px',
+          fontWeight: '500'
         }}>
           {t("common.stop")}
         </span>
       </button>
     );
   }
-  
+
   // Send Button
   return (
     <button
       onClick={onSend}
       disabled={isDisabled}
-      className={`flex items-center justify-center gap-2 rounded-2xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl border-2 ${
-        isDisabled
+      className={`flex items-center justify-center gap-2 rounded-2xl transition-all duration-200 font-semibold shadow-lg hover:shadow-xl border-2 ${isDisabled
           ? 'bg-gray-200 text-gray-400 cursor-not-allowed border-gray-300'
           : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700 hover:scale-105 border-blue-500 hover:border-blue-600'
-      }`}
-      style={{ 
+        }`}
+      style={{
         height: `${height}px`,
         minHeight: '44px',
         width: '100px'
       }}
     >
       {/* Send Icon - Simple arrow */}
-      <div 
-        style={{ 
-          width: '16px', 
+      <div
+        style={{
+          width: '16px',
           height: '16px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center'
         }}
       >
-        <svg 
-          width="16" 
-          height="16" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="currentColor" 
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
           strokeWidth="2.5"
           style={{ color: isDisabled ? '#9CA3AF' : '#ffffff' }}
         >
           <path d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
         </svg>
       </div>
-      <span style={{ 
-        color: isDisabled ? '#9CA3AF' : '#ffffff', 
-        fontSize: '14px', 
-        fontWeight: '500' 
+      <span style={{
+        color: isDisabled ? '#9CA3AF' : '#ffffff',
+        fontSize: '14px',
+        fontWeight: '500'
       }}>
         {t("common.send")}
       </span>
@@ -147,15 +146,6 @@ interface MessagePart {
   imageTitle?: string;
 }
 
-interface ToolCall {
-  id: string;
-  name: string;
-  args: any;
-  result?: any;
-  status: 'pending' | 'in-progress' | 'completed' | 'failed';
-  error?: string;
-}
-
 export const Thread: FC = () => {
   const { t } = useTranslation()
   const [messages, setMessages] = useState<Message[]>([]);
@@ -168,7 +158,7 @@ export const Thread: FC = () => {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const inputContainerRef = useRef<HTMLDivElement>(null);
   const loadingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // @标签页功能相关状态
   const [showTabSelector, setShowTabSelector] = useState(false);
   const [tabSelectorPosition, setTabSelectorPosition] = useState({ top: 0, left: 0 });
@@ -177,10 +167,10 @@ export const Thread: FC = () => {
   const [atPosition, setAtPosition] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
-  
+
   // Add a flag to track if this is the initial mount
   const isInitialMount = useRef(true);
-  
+
   // Dynamic placeholder functionality
   const [placeholderIndex, setPlaceholderIndex] = useState(0);
   const placeholderList = [
@@ -289,7 +279,7 @@ export const Thread: FC = () => {
       const interval = setInterval(() => {
         setPlaceholderIndex(prev => (prev + 1) % placeholderList.length);
       }, 3000); // Change every 3 seconds
-      
+
       return () => clearInterval(interval);
     }
   }, [inputValue, loading, placeholderList.length]);
@@ -318,7 +308,7 @@ export const Thread: FC = () => {
   useEffect(() => {
     const handleClearMessages = async () => {
       console.log('🔄 [DEBUG] Clearing all messages and conversation history');
-      
+
       // Stop all ongoing AI chats before clearing messages
       console.log('🛑 [DEBUG] Stopping all ongoing AI chats before clearing messages');
       try {
@@ -329,7 +319,7 @@ export const Thread: FC = () => {
       } catch (error) {
         console.error('🛑 [DEBUG] Failed to stop AI chats:', error);
       }
-      
+
       setMessages([]);
       setInputValue('');
       setLoading(false);
@@ -371,45 +361,45 @@ export const Thread: FC = () => {
       console.log('Received message:', message);
       console.log('Current state - loading:', loading, 'currentMessageId:', message.messageId);
       console.log('Message type:', message.request);
-      
+
       if (message.request === "ai-chat-stream") {
         console.log('Processing streaming chunk:', message.chunk);
         // Update the message with streaming content (append chunk)
-        setMessages(prev => prev.map(msg => 
-          msg.id === message.messageId 
-            ? { 
-                ...msg, 
-                // Only update parts, not content to avoid duplication
-                parts: (() => {
-                  const existingParts = msg.parts || [];
-                  const lastPart = existingParts[existingParts.length - 1];
-                  
-                  if (lastPart && lastPart.type === 'text') {
-                    // Update existing text part
-                    return [
-                      ...existingParts.slice(0, -1),
-                      {
-                        ...lastPart,
-                        content: (lastPart.content || '') + message.chunk
-                      }
-                    ];
-                  } else {
-                    // Create new text part
-                    return [
-                      ...existingParts,
-                      {
-                        id: `text-${Date.now()}`,
-                        type: 'text' as const,
-                        content: message.chunk,
-                        status: 'completed',
-                        timestamp: Date.now()
-                      }
-                    ];
-                  }
-                })(),
-                // Ensure content field is not updated during streaming to prevent duplication
-                content: msg.content || ''
-              }
+        setMessages(prev => prev.map(msg =>
+          msg.id === message.messageId
+            ? {
+              ...msg,
+              // Only update parts, not content to avoid duplication
+              parts: (() => {
+                const existingParts = msg.parts || [];
+                const lastPart = existingParts[existingParts.length - 1];
+
+                if (lastPart && lastPart.type === 'text') {
+                  // Update existing text part
+                  return [
+                    ...existingParts.slice(0, -1),
+                    {
+                      ...lastPart,
+                      content: (lastPart.content || '') + message.chunk
+                    }
+                  ];
+                } else {
+                  // Create new text part
+                  return [
+                    ...existingParts,
+                    {
+                      id: `text-${Date.now()}`,
+                      type: 'text' as const,
+                      content: message.chunk,
+                      status: 'completed',
+                      timestamp: Date.now()
+                    }
+                  ];
+                }
+              })(),
+              // Ensure content field is not updated during streaming to prevent duplication
+              content: msg.content || ''
+            }
             : msg
         ));
       } else if (message.request === "ai-chat-tools-step") {
@@ -417,87 +407,87 @@ export const Thread: FC = () => {
         console.log('🔍 [DEBUG] Tool call args received:', message.step.args);
         if (message.step.type === 'call_tool') {
           // Add tool call part to the message, but check for duplicates first
-          setMessages(prev => prev.map(msg => 
-            msg.id === message.messageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === message.messageId
               ? {
-                  ...msg,
-                  parts: (() => {
-                    const existingParts = msg.parts || [];
-                    // Check if we already have a tool_call with the same name that's still in-progress
-                    const existingToolCall = existingParts.find(part => 
-                      part.type === 'tool_call' && 
-                      part.toolName === message.step.name && 
-                      part.status === 'in-progress'
-                    );
-                    
-                    if (existingToolCall) {
-                      // Don't add duplicate, just return existing parts
-                      return existingParts;
+                ...msg,
+                parts: (() => {
+                  const existingParts = msg.parts || [];
+                  // Check if we already have a tool_call with the same name that's still in-progress
+                  const existingToolCall = existingParts.find(part =>
+                    part.type === 'tool_call' &&
+                    part.toolName === message.step.name &&
+                    part.status === 'in-progress'
+                  );
+
+                  if (existingToolCall) {
+                    // Don't add duplicate, just return existing parts
+                    return existingParts;
+                  }
+
+                  // Add new tool call
+                  return [
+                    ...existingParts,
+                    {
+                      id: `tool-${Date.now()}-${Math.random()}`,
+                      type: 'tool_call',
+                      toolName: message.step.name,
+                      args: message.step.args,
+                      status: 'in-progress',
+                      timestamp: Date.now()
                     }
-                    
-                    // Add new tool call
-                    return [
-                      ...existingParts,
-                      {
-                        id: `tool-${Date.now()}-${Math.random()}`,
-                        type: 'tool_call',
-                        toolName: message.step.name,
-                        args: message.step.args,
-                        status: 'in-progress',
-                        timestamp: Date.now()
-                      }
-                    ];
-                  })(),
-                  // Ensure content field is not updated during tool calls to prevent duplication
-                  content: msg.content || ''
-                }
+                  ];
+                })(),
+                // Ensure content field is not updated during tool calls to prevent duplication
+                content: msg.content || ''
+              }
               : msg
           ));
         } else if (message.step.type === 'tool_result') {
           console.log('Tool result received, maintaining loading state');
           // Update tool call part with result
-          setMessages(prev => prev.map(msg => 
-            msg.id === message.messageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === message.messageId
               ? {
-                  ...msg,
-                  parts: (msg.parts || []).map(part => {
-                    // Find the most recent tool_call that matches the name and hasn't been completed yet
-                    if (part.type === 'tool_call' && 
-                        part.toolName === message.step.name && 
-                        part.status === 'in-progress') {
-                      return {
-                        ...part,
-                        status: message.step.error ? 'failed' : 'completed',
-                        error: message.step.error,
-                        result: message.step.result
-                      };
-                    }
-                    return part;
-                  }),
-                  // Ensure content field is not updated during tool results to prevent duplication
-                  content: msg.content || ''
-                }
+                ...msg,
+                parts: (msg.parts || []).map(part => {
+                  // Find the most recent tool_call that matches the name and hasn't been completed yet
+                  if (part.type === 'tool_call' &&
+                    part.toolName === message.step.name &&
+                    part.status === 'in-progress') {
+                    return {
+                      ...part,
+                      status: message.step.error ? 'failed' : 'completed',
+                      error: message.step.error,
+                      result: message.step.result
+                    };
+                  }
+                  return part;
+                }),
+                // Ensure content field is not updated during tool results to prevent duplication
+                content: msg.content || ''
+              }
               : msg
           ));
         } else if (message.step.type === 'think') {
           // Add thinking step
-          setMessages(prev => prev.map(msg => 
-            msg.id === message.messageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === message.messageId
               ? {
-                  ...msg,
-                  parts: [
-                    ...(msg.parts || []),
-                    {
-                      id: `thinking-${Date.now()}`,
-                      type: 'thinking' as const,
-                      content: message.step.content,
-                      status: 'completed',
-                      timestamp: Date.now()
-                    }
-                  ],
-                  // Ensure content field is not updated during thinking to prevent duplication
-                  content: msg.content || ''
-                }
+                ...msg,
+                parts: [
+                  ...(msg.parts || []),
+                  {
+                    id: `thinking-${Date.now()}`,
+                    type: 'thinking' as const,
+                    content: message.step.content,
+                    status: 'completed',
+                    timestamp: Date.now()
+                  }
+                ],
+                // Ensure content field is not updated during thinking to prevent duplication
+                content: msg.content || ''
+              }
               : msg
           ));
         }
@@ -507,34 +497,34 @@ export const Thread: FC = () => {
         // Filter out internal ReAct steps like "think", "act", "observe", "reason"
         const stepType = message.step.type;
         const isInternalStep = ['think', 'act', 'observe', 'reason'].includes(stepType);
-        
+
         if (!isInternalStep) {
           // Add planning step
-          setMessages(prev => prev.map(msg => 
-            msg.id === message.messageId 
+          setMessages(prev => prev.map(msg =>
+            msg.id === message.messageId
               ? {
-                  ...msg,
-                  parts: [
-                    ...(msg.parts || []),
-                    {
-                      id: `planning-${Date.now()}`,
-                      type: 'planning' as const,
-                      content: message.step.content,
-                      status: message.step.status || 'completed',
-                      timestamp: Date.now()
-                    }
-                  ],
-                  // Ensure content field is not updated during planning to prevent duplication
-                  content: msg.content || ''
-                }
+                ...msg,
+                parts: [
+                  ...(msg.parts || []),
+                  {
+                    id: `planning-${Date.now()}`,
+                    type: 'planning' as const,
+                    content: message.step.content,
+                    status: message.step.status || 'completed',
+                    timestamp: Date.now()
+                  }
+                ],
+                // Ensure content field is not updated during planning to prevent duplication
+                content: msg.content || ''
+              }
               : msg
           ));
         }
       } else if (message.request === "ai-chat-complete") {
         console.log('Task completed - ending loading state');
         // Task is complete - end loading state
-        setMessages(prev => prev.map(msg => 
-          msg.id === message.messageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === message.messageId
             ? { ...msg, streaming: false }
             : msg
         ));
@@ -558,8 +548,8 @@ export const Thread: FC = () => {
           loadingTimeoutRef.current = null;
         }
         // Task encountered error - end loading state
-        setMessages(prev => prev.map(msg => 
-          msg.id === message.messageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === message.messageId
             ? { ...msg, content: `Error: ${message.error}`, streaming: false }
             : msg
         ));
@@ -570,24 +560,24 @@ export const Thread: FC = () => {
         }, 100);
       } else if (message.request === "ai-chat-image-data") {
         console.log('Processing image data');
-        
+
         // Add image part to the message
-        setMessages(prev => prev.map(msg => 
-          msg.id === message.messageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === message.messageId
             ? {
-                ...msg,
-                parts: [
-                  ...(msg.parts || []),
-                  {
-                    id: `image-${Date.now()}-${Math.random()}`,
-                    type: 'image',
-                    status: 'completed',
-                    timestamp: Date.now(),
-                    imageData: message.imageData,
-                    imageTitle: message.title || useToolName(message.toolName || '')
-                  }
-                ]
-              }
+              ...msg,
+              parts: [
+                ...(msg.parts || []),
+                {
+                  id: `image-${Date.now()}-${Math.random()}`,
+                  type: 'image',
+                  status: 'completed',
+                  timestamp: Date.now(),
+                  imageData: message.imageData,
+                  imageTitle: message.title || useToolName(message.toolName || '')
+                }
+              ]
+            }
             : msg
         ));
       } else {
@@ -603,15 +593,15 @@ export const Thread: FC = () => {
 
   // Handle providing current chat images for AI tools
   useEffect(() => {
-    const handleProvideImages = (message: any, sender: any, sendResponse: (response: any) => void) => {
+    const handleProvideImages = (message: any, _sender: any, sendResponse: (response: any) => void) => {
       if (message.request === "provide-current-chat-images") {
-        const imagesInChat = messages.filter(msg => 
+        const imagesInChat = messages.filter(msg =>
           msg.parts?.some(part => part.type === 'image' && part.imageData)
         ).map(msg => ({
           id: msg.id,
           parts: msg.parts?.filter(part => part.type === 'image' && part.imageData)
         }))
-        
+
         sendResponse({
           images: imagesInChat,
           count: imagesInChat.length
@@ -633,7 +623,7 @@ export const Thread: FC = () => {
       console.log('🛑 [DEBUG] Early return - no currentMessageId or not loading')
       return;
     }
-    
+
     try {
       console.log('🛑 [DEBUG] Sending stop-ai-chat message to background...')
       const response = await chrome.runtime.sendMessage({
@@ -641,25 +631,25 @@ export const Thread: FC = () => {
         messageId: currentMessageId
       });
       console.log('🛑 [DEBUG] Background response:', response)
-      
+
       // Clear the safety timeout since user manually stopped
       if (loadingTimeoutRef.current) {
         clearTimeout(loadingTimeoutRef.current);
         loadingTimeoutRef.current = null;
       }
-      
+
       // Update UI to show stopped state
-      setMessages(prev => prev.map(msg => 
-        msg.id === currentMessageId 
+      setMessages(prev => prev.map(msg =>
+        msg.id === currentMessageId
           ? { ...msg, streaming: false, content: msg.content + '\n\n[AI response stopped by user]' }
           : msg
       ));
-      
+
       setLoading(false);
       setCurrentMessageId(null);
-      
+
       console.log('🛑 [DEBUG] UI updated, loading set to false')
-      
+
       // Focus back to input
       setTimeout(() => {
         inputRef.current?.focus();
@@ -678,7 +668,7 @@ export const Thread: FC = () => {
       .slice()
       .reverse()
       .find(msg => msg.role === 'user');
-    
+
     if (lastUserMessage && lastUserMessage.content === trimmedMessage) {
       console.log('🔄 [DEBUG] Duplicate user message detected, skipping:', trimmedMessage);
       return;
@@ -693,10 +683,10 @@ export const Thread: FC = () => {
     if (inputRef.current) {
       inputRef.current.style.height = '44px';
     }
-    
+
     // Set loading state immediately
     setLoading(true);
-    
+
     // Set a safety timeout to prevent UI from getting stuck in loading state
     if (loadingTimeoutRef.current) {
       clearTimeout(loadingTimeoutRef.current);
@@ -707,33 +697,33 @@ export const Thread: FC = () => {
       setCurrentMessageId(null);
     }, 300000); // 5 minutes timeout
 
-          // Add user message
-      const userMessage: Message = {
-        id: Date.now().toString(),
-        content: message,
-        role: 'user',
-        parts: [],
-        referencedTabs: selectedTabs
-      };
-      
-      const updatedMessages = [...messages, userMessage];
-      setMessages(updatedMessages);
-      
-      // 清空选中的标签页和输入框
-      setSelectedTabs([]);
-      setInputValue('');
+    // Add user message
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      content: message,
+      role: 'user',
+      parts: [],
+      referencedTabs: selectedTabs
+    };
 
-      // Create AI message placeholder for streaming
-      const aiMessageId = (Date.now() + 1).toString();
-      setCurrentMessageId(aiMessageId); // Set current message ID for stop functionality
-      const aiMessage: Message = {
-        id: aiMessageId,
-        content: '',
-        role: 'assistant',
-        streaming: true,
-        parts: []
-      };
-      setMessages(prev => [...prev, aiMessage]);
+    const updatedMessages = [...messages, userMessage];
+    setMessages(updatedMessages);
+
+    // 清空选中的标签页和输入框
+    setSelectedTabs([]);
+    setInputValue('');
+
+    // Create AI message placeholder for streaming
+    const aiMessageId = (Date.now() + 1).toString();
+    setCurrentMessageId(aiMessageId); // Set current message ID for stop functionality
+    const aiMessage: Message = {
+      id: aiMessageId,
+      content: '',
+      role: 'assistant',
+      streaming: true,
+      parts: []
+    };
+    setMessages(prev => [...prev, aiMessage]);
 
     try {
       // Use MCP client for tool-enabled AI chat
@@ -742,7 +732,7 @@ export const Thread: FC = () => {
         .map(msg => {
           // Extract content from either content field or parts array
           let messageContent = msg.content || '';
-          
+
           // If content is empty but we have parts, extract text content from parts
           if (!messageContent.trim() && msg.parts && msg.parts.length > 0) {
             const textParts = msg.parts
@@ -751,7 +741,7 @@ export const Thread: FC = () => {
               .join('');
             messageContent = textParts;
           }
-          
+
           // Only include messages that have actual content
           if (messageContent.trim()) {
             return {
@@ -764,21 +754,21 @@ export const Thread: FC = () => {
         .filter(msg => msg !== null) // Remove null entries
         .reduce((acc, msg, index, array) => {
           // Remove consecutive duplicate user messages
-          if (index > 0 && msg.role === 'user') {
+          if (index > 0 && msg!.role === 'user') {
             const prevMsg = array[index - 1];
-            if (prevMsg && prevMsg.role === 'user' && prevMsg.content === msg.content) {
-              console.log('🔄 [DEBUG] Removing duplicate user message from context:', msg.content);
+            if (prevMsg && prevMsg.role === 'user' && prevMsg.content === msg!.content) {
+              console.log('🔄 [DEBUG] Removing duplicate user message from context:', msg!.content);
               return acc; // Skip this duplicate message
             }
           }
-          acc.push(msg);
+          acc.push(msg!);
           return acc;
         }, [] as any[]);
 
       // Count user messages to determine if we should add "continue with the previous result"
       const userMessageCount = conversationContext.filter(msg => msg.role === 'user').length;
       console.log('🔄 [DEBUG] User message count:', userMessageCount);
-      
+
       // If this is the second or later user message, automatically append "continue with the previous result"
       let finalPrompt = message;
       if (userMessageCount >= 2) {
@@ -802,10 +792,10 @@ export const Thread: FC = () => {
         messageId: aiMessageId,
         referencedTabs: selectedTabs
       });
-      
+
       if (!response || !response.success) {
-        setMessages(prev => prev.map(msg => 
-          msg.id === aiMessageId 
+        setMessages(prev => prev.map(msg =>
+          msg.id === aiMessageId
             ? { ...msg, content: `Error: Failed to start AI chat`, streaming: false }
             : msg
         ));
@@ -814,8 +804,8 @@ export const Thread: FC = () => {
       }
     } catch (error: any) {
       console.error('AI response failed:', error);
-      setMessages(prev => prev.map(msg => 
-        msg.id === aiMessageId 
+      setMessages(prev => prev.map(msg =>
+        msg.id === aiMessageId
           ? { ...msg, content: `Error: ${error?.message || 'Unknown error'}`, streaming: false }
           : msg
       ));
@@ -829,7 +819,7 @@ export const Thread: FC = () => {
     // Only execute on initial mount to prevent re-execution issues
     if (!isInitialMount.current) return;
     isInitialMount.current = false;
-    
+
     chrome.storage?.local?.get(["aipex_user_input"], (result) => {
       if (result && result.aipex_user_input) {
         console.log('🔄 [DEBUG] Auto-filling input from storage:', result.aipex_user_input);
@@ -864,12 +854,12 @@ export const Thread: FC = () => {
     const value = e.target.value;
     setInputValue(value);
     adjustTextareaHeight();
-    
+
     // 检测@符号
     const cursorPosition = e.target.selectionStart;
     const textBeforeCursor = value.substring(0, cursorPosition);
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
+
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
       // 如果@后面没有空格，说明正在输入标签页引用
@@ -879,7 +869,7 @@ export const Thread: FC = () => {
         setSelectedIndex(0); // 重置选中索引
         setShowTabSelector(true);
         fetchAvailableTabs();
-        
+
         // 计算选择器位置
         if (inputRef.current) {
           const rect = inputRef.current.getBoundingClientRect();
@@ -903,7 +893,7 @@ export const Thread: FC = () => {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showTabSelector) {
       const filteredTabs = getFilteredTabs();
-      
+
       if (e.key === 'Enter') {
         e.preventDefault();
         if (filteredTabs[selectedIndex]) {
@@ -920,7 +910,7 @@ export const Thread: FC = () => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (showTabSelector) {
       const filteredTabs = getFilteredTabs();
-      
+
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSelectedIndex(prev => {
@@ -950,24 +940,24 @@ export const Thread: FC = () => {
         setSelectedIndex(0);
       }
     }
-    
+
     if (e.key === 'Backspace' && showTabSelector) {
       const cursorPosition = e.currentTarget.selectionStart;
       const textBeforeCursor = inputValue.substring(0, cursorPosition);
       const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-      
+
       // If we're at the @ position and there's nothing after it, cancel the @
       if (lastAtIndex !== -1 && cursorPosition === lastAtIndex + 1) {
         e.preventDefault();
         setShowTabSelector(false);
         setSearchQuery('');
         setSelectedIndex(0);
-        
+
         // Remove the @ from the input
         const beforeAt = inputValue.substring(0, lastAtIndex);
         const afterAt = inputValue.substring(lastAtIndex + 1);
         setInputValue(beforeAt + afterAt);
-        
+
         // Set cursor position after removing @
         setTimeout(() => {
           if (inputRef.current) {
@@ -983,7 +973,7 @@ export const Thread: FC = () => {
     if (showTabSelector) {
       e.preventDefault();
       const filteredTabs = getFilteredTabs();
-      
+
       if (e.deltaY > 0) {
         // Scroll down
         setSelectedIndex(prev => {
@@ -1012,7 +1002,7 @@ export const Thread: FC = () => {
   const handleTabSelect = (tab: ReferencedTab) => {
     const newSelectedTabs = [...selectedTabs, tab];
     setSelectedTabs(newSelectedTabs);
-    
+
     // 完全移除@符号和搜索内容
     const beforeAt = inputValue.substring(0, atPosition);
     const afterAt = inputValue.substring(atPosition);
@@ -1021,11 +1011,11 @@ export const Thread: FC = () => {
     const remainingAfterAt = atContent ? afterAt.substring(atContent[0].length) : afterAt;
     const newValue = beforeAt + remainingAfterAt;
     setInputValue(newValue);
-    
+
     setShowTabSelector(false);
     setSearchQuery('');
     setSelectedIndex(0);
-    
+
     // 聚焦到输入框
     setTimeout(() => {
       if (inputRef.current) {
@@ -1046,10 +1036,10 @@ export const Thread: FC = () => {
     if (!searchQuery.trim()) {
       return availableTabs; // 显示所有标签页，让滚动条处理
     }
-    
+
     const query = searchQuery.toLowerCase();
-    return availableTabs.filter(tab => 
-      tab.title.toLowerCase().includes(query) || 
+    return availableTabs.filter(tab =>
+      tab.title.toLowerCase().includes(query) ||
       tab.url.toLowerCase().includes(query)
     );
   };
@@ -1075,7 +1065,7 @@ export const Thread: FC = () => {
         }
       `}</style>
       {/* Messages area */}
-      <div 
+      <div
         className="flex-1 overflow-y-auto p-4 min-h-0"
         style={{ paddingBottom: `${Math.max(inputHeight + 16, 120)}px` }}
       >
@@ -1084,8 +1074,8 @@ export const Thread: FC = () => {
             <div className="text-center py-8">
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to AIpex</h3>
               <p className="text-gray-600">Choose a quick action or ask anything to get started</p>
-              
-              
+
+
               <div className="grid gap-4 sm:grid-cols-2 mt-8">
                 <button
                   onClick={() => handleSubmit('Please organize my open tabs by topic and purpose')}
@@ -1101,7 +1091,7 @@ export const Thread: FC = () => {
                   </div>
                   <div className="text-xs text-gray-600">Use AI to group current-window tabs by topic</div>
                 </button>
-                
+
                 <button
                   onClick={() => handleSubmit('Summarize this page and save key points to clipboard')}
                   className="w-full text-left p-6 rounded-2xl border border-blue-200 hover:border-blue-300 hover:bg-white hover:shadow-md bg-white/70 backdrop-blur-sm transition-all duration-200"
@@ -1116,7 +1106,7 @@ export const Thread: FC = () => {
                   </div>
                   <div className="text-xs text-gray-600">Extract content, summarize, and copy to clipboard</div>
                 </button>
-                
+
                 <button
                   onClick={() => handleSubmit('Please use Google to research topic \'MCP\'')}
                   className="w-full text-left p-6 rounded-2xl border border-purple-200 hover:border-purple-300 hover:bg-white hover:shadow-md bg-white/70 backdrop-blur-sm transition-all duration-200"
@@ -1131,7 +1121,7 @@ export const Thread: FC = () => {
                   </div>
                   <div className="text-xs text-gray-600">Use Google to research and gather information</div>
                 </button>
-                
+
                 <button
                   onClick={() => handleSubmit('Compare the price of Airpods 3')}
                   className="w-full text-left p-6 rounded-2xl border border-orange-200 hover:border-orange-300 hover:bg-white hover:shadow-md bg-white/70 backdrop-blur-sm transition-all duration-200"
@@ -1153,11 +1143,10 @@ export const Thread: FC = () => {
               {messages.map((message) => (
                 <div
                   key={message.id}
-                  className={`p-4 rounded-lg ${
-                    message.role === 'user'
+                  className={`p-4 rounded-lg ${message.role === 'user'
                       ? 'bg-gradient-to-r from-emerald-100 to-green-100 text-gray-800 ml-12 border border-emerald-200'
                       : 'bg-gray-100 text-gray-900 mr-12'
-                  }`}
+                    }`}
                 >
                   {/* Render message content - prioritize parts over content to avoid duplication */}
                   {message.parts && message.parts.length > 0 ? (
@@ -1173,7 +1162,7 @@ export const Thread: FC = () => {
                           // Handle empty arguments properly
                           const hasArgs = part.args && Object.keys(part.args).length > 0;
                           const argsText = hasArgs ? JSON.stringify(part.args, null, 2) : 'No arguments';
-                          
+
                           return (
                             <ToolFallback
                               key={part.id}
@@ -1200,9 +1189,9 @@ export const Thread: FC = () => {
                               <div className="text-sm text-gray-600 mb-2 font-medium">
                                 📸 {part.imageTitle || 'Image'}
                               </div>
-                              <img 
-                                src={part.imageData} 
-                                alt="Screenshot" 
+                              <img
+                                src={part.imageData}
+                                alt="Screenshot"
                                 className="max-w-full h-auto rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer"
                                 style={{ maxHeight: '400px' }}
                                 loading="lazy"
@@ -1236,7 +1225,7 @@ export const Thread: FC = () => {
                   ) : (
                     <MarkdownText>{message.content}</MarkdownText>
                   )}
-                  
+
                   {message.streaming && (
                     <div className="mt-2">
                       <div className="inline-block w-2 h-4 bg-gray-400 animate-pulse"></div>
@@ -1249,14 +1238,14 @@ export const Thread: FC = () => {
           )}
         </div>
       </div>
-      
+
       {/* Input area - Fixed at bottom */}
-      <div 
+      <div
         ref={inputContainerRef}
         className="absolute bottom-0 left-0 right-0 border-t border-gray-200 p-4 bg-white shadow-lg backdrop-blur-sm z-10"
       >
         <div className="max-w-2xl mx-auto">
-          
+
           {/* 选中的标签页显示区域 */}
           {selectedTabs.length > 0 && (
             <div className="mb-3 p-3 bg-gray-50 border border-gray-200 rounded-xl">
@@ -1304,15 +1293,15 @@ export const Thread: FC = () => {
             </div>
           )}
 
-          
+
           <div className="flex items-start gap-3">
             <div className="flex-1 relative">
               <textarea
                 ref={inputRef}
                 className="w-full resize-none border-2 border-gray-200 rounded-2xl px-4 py-3 focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200 bg-white shadow-sm hover:shadow-md"
                 placeholder={
-                  loading 
-                    ? "AI is responding..." 
+                  loading
+                    ? "AI is responding..."
                     : `${placeholderList[placeholderIndex]} (Shift+Enter for new line)`
                 }
                 value={inputValue}
@@ -1320,7 +1309,7 @@ export const Thread: FC = () => {
                 onKeyPress={handleKeyPress}
                 onKeyDown={handleKeyDown}
                 disabled={loading}
-                style={{ 
+                style={{
                   height: `${textareaHeight}px`,
                   minHeight: '44px',
                   maxHeight: '200px',
@@ -1350,7 +1339,7 @@ export const Thread: FC = () => {
           }}
           onWheel={handleTabSelectorWheel}
         >
-          <div 
+          <div
             className="max-h-32 overflow-y-auto tab-selector-scroll"
             style={{
               scrollbarWidth: 'thin',
@@ -1363,11 +1352,10 @@ export const Thread: FC = () => {
                   key={tab.id}
                   data-tab-index={index}
                   onClick={() => handleTabSelect(tab)}
-                  className={`w-full text-left px-2 py-1 rounded-sm transition-colors ${
-                    index === selectedIndex 
-                      ? 'bg-blue-500 text-white' 
+                  className={`w-full text-left px-2 py-1 rounded-sm transition-colors ${index === selectedIndex
+                      ? 'bg-blue-500 text-white'
                       : 'hover:bg-blue-50'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-1.5">
                     <div className="w-2.5 h-2.5 bg-blue-100 rounded flex items-center justify-center flex-shrink-0">

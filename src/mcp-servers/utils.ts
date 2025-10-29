@@ -151,7 +151,7 @@ export async function getCurrentDateTime(): Promise<{
   utc: string
 }> {
   const now = new Date()
-  
+
   return {
     timestamp: now.getTime(),
     date: now.toLocaleDateString(),
@@ -167,9 +167,9 @@ export async function getCurrentDateTime(): Promise<{
 export async function formatTimestamp(timestamp: number, format: string = "default"): Promise<{ success: boolean; formatted?: string; error?: string }> {
   try {
     const date = new Date(timestamp)
-    
+
     let formatted: string
-    
+
     switch (format) {
       case "iso":
         formatted = date.toISOString()
@@ -190,7 +190,7 @@ export async function formatTimestamp(timestamp: number, format: string = "defau
         const minutes = Math.floor(seconds / 60)
         const hours = Math.floor(minutes / 60)
         const days = Math.floor(hours / 24)
-        
+
         if (days > 0) formatted = `${days} day${days > 1 ? 's' : ''} ago`
         else if (hours > 0) formatted = `${hours} hour${hours > 1 ? 's' : ''} ago`
         else if (minutes > 0) formatted = `${minutes} minute${minutes > 1 ? 's' : ''} ago`
@@ -199,7 +199,7 @@ export async function formatTimestamp(timestamp: number, format: string = "defau
       default:
         formatted = date.toLocaleString()
     }
-    
+
     return { success: true, formatted }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -212,7 +212,7 @@ export async function formatTimestamp(timestamp: number, format: string = "defau
 export async function generateRandomString(length: number = 8, type: "alphanumeric" | "alphabetic" | "numeric" = "alphanumeric"): Promise<{ success: boolean; result?: string; error?: string }> {
   try {
     let chars: string
-    
+
     switch (type) {
       case "alphabetic":
         chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
@@ -223,12 +223,12 @@ export async function generateRandomString(length: number = 8, type: "alphanumer
       default:
         chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     }
-    
+
     let result = ""
     for (let i = 0; i < length; i++) {
       result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
-    
+
     return { success: true, result }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -240,7 +240,7 @@ export async function generateRandomString(length: number = 8, type: "alphanumer
  */
 export async function validateUrl(url: string): Promise<{ success: boolean; isValid: boolean; error?: string }> {
   try {
-    const urlObj = new URL(url)
+    new URL(url)
     return { success: true, isValid: true }
   } catch {
     return { success: true, isValid: false }
@@ -266,11 +266,11 @@ export async function getUrlParameters(url: string): Promise<{ success: boolean;
   try {
     const urlObj = new URL(url)
     const parameters: Record<string, string> = {}
-    
+
     urlObj.searchParams.forEach((value, key) => {
       parameters[key] = value
     })
-    
+
     return { success: true, parameters }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -283,11 +283,11 @@ export async function getUrlParameters(url: string): Promise<{ success: boolean;
 export async function buildUrl(baseUrl: string, parameters: Record<string, string>): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const urlObj = new URL(baseUrl)
-    
+
     for (const [key, value] of Object.entries(parameters)) {
       urlObj.searchParams.set(key, value)
     }
-    
+
     return { success: true, url: urlObj.toString() }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -314,13 +314,13 @@ export async function getTextStats(text: string): Promise<{
     const words = text.trim().split(/\s+/).filter(word => word.length > 0).length
     const sentences = text.split(/[.!?]+/).filter(sentence => sentence.trim().length > 0).length
     const paragraphs = text.split(/\n\s*\n/).filter(para => para.trim().length > 0).length
-    
+
     // Average reading speed: 200 words per minute
     const readingTime = Math.ceil(words / 200)
-    
+
     // Average speaking speed: 150 words per minute
     const speakingTime = Math.ceil(words / 150)
-    
+
     return {
       success: true,
       stats: {
@@ -343,7 +343,7 @@ export async function getTextStats(text: string): Promise<{
 export async function convertTextCase(text: string, caseType: "uppercase" | "lowercase" | "titlecase" | "sentencecase" | "camelcase" | "snakecase" | "kebabcase"): Promise<{ success: boolean; result?: string; error?: string }> {
   try {
     let result: string
-    
+
     switch (caseType) {
       case "uppercase":
         result = text.toUpperCase()
@@ -358,7 +358,7 @@ export async function convertTextCase(text: string, caseType: "uppercase" | "low
         result = text.toLowerCase().replace(/(^\w|\.\s+\w)/g, (letter) => letter.toUpperCase())
         break
       case "camelcase":
-        result = text.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase())
+        result = text.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (_m, chr) => chr.toUpperCase())
         break
       case "snakecase":
         result = text.toLowerCase().replace(/[^a-zA-Z0-9]+/g, "_")
@@ -369,7 +369,7 @@ export async function convertTextCase(text: string, caseType: "uppercase" | "low
       default:
         result = text
     }
-    
+
     return { success: true, result }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }

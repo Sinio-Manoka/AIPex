@@ -6,18 +6,18 @@ import { useTranslation } from "./hooks"
  * @returns Translated tool name or original name if translation not found
  */
 export const useToolName = (toolName: string): string => {
-  const { t, language } = useTranslation()
-  
+  const { t, language: _language } = useTranslation()
+
   try {
     // Try to get translation from tools namespace
     const translatedName = t(`tools.${toolName}` as any)
-    
+
     // If the translated name is the same as the key, it means no translation was found
     if (translatedName === `tools.${toolName}`) {
       // Return formatted original name as fallback
       return formatToolName(toolName)
     }
-    
+
     return translatedName
   } catch (error) {
     // Return formatted original name on error
@@ -45,8 +45,8 @@ export const formatToolName = (toolName: string): string => {
  * @returns Translated tool name or formatted original name
  */
 export const getToolName = (
-  toolName: string, 
-  language: string, 
+  toolName: string,
+  language: string,
   translations: any
 ): string => {
   try {

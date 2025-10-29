@@ -628,7 +628,7 @@ const ChatBot = () => {
                           .filter((part) => part.type === "source-url")
                           .map((part, i) => (
                             <SourcesContent key={`${message.id}-${i}`}>
-                              <Source key={`${message.id}-${i}`} href={part.url} title={part.url} />
+                              <Source key={`${message.id}-${i}`} href={(part as any).url} title={(part as any).url} />
                             </SourcesContent>
                           ))}
                       </Sources>

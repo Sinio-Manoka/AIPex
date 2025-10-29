@@ -1,4 +1,3 @@
-import React from "react";
 import Markdown from "markdown-to-jsx";
 import { type FC } from "react";
 
@@ -15,7 +14,7 @@ export const MarkdownText: FC<MarkdownTextProps> = ({ children }) => {
             // Code block styling
             code: ({ children, className, ...props }) => {
               const isCodeBlock = className && className.startsWith('language-');
-              
+
               if (isCodeBlock) {
                 return (
                   <pre className="bg-gray-50 rounded-xl p-4 overflow-x-auto mb-4 border border-gray-200 font-mono text-sm leading-relaxed shadow-sm">
@@ -26,7 +25,7 @@ export const MarkdownText: FC<MarkdownTextProps> = ({ children }) => {
                 );
               } else {
                 return (
-                  <code 
+                  <code
                     className="bg-gray-100 text-gray-900 px-2 py-1 rounded-md text-sm border border-gray-200 font-mono font-medium shadow-sm"
                     {...props}
                   >

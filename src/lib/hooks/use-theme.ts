@@ -26,7 +26,7 @@ export function useTheme() {
         ? "dark"
         : "light";
     } else {
-      effectiveTheme = theme;
+      effectiveTheme = theme || "light";
     }
 
     // Apply theme class

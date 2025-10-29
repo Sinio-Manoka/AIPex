@@ -16,15 +16,14 @@ interface CallToolProps {
 const CallTool: React.FC<CallToolProps> = ({ steps }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [showResults, setShowResults] = useState(false)
-  
+
   if (steps.length === 0) return null
 
   // Count different types of steps
   const thinkSteps = steps.filter(s => s.type === 'think')
   const toolSteps = steps.filter(s => s.type === 'call_tool')
   const resultSteps = steps.filter(s => s.type === 'tool_result')
-  
-  const totalSteps = steps.length
+
   const hasThinking = thinkSteps.length > 0
   const hasResults = resultSteps.length > 0
 
@@ -54,16 +53,16 @@ const CallTool: React.FC<CallToolProps> = ({ steps }) => {
             )}
           </div>
         </div>
-        
+
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-8 h-8 rounded-full bg-white border border-blue-200 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-all duration-200 shadow-sm"
           title={isExpanded ? 'Hide details' : 'Show details'}
         >
-          <svg 
-            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -123,7 +122,7 @@ const CallTool: React.FC<CallToolProps> = ({ steps }) => {
             }
             return null
           })}
-          
+
           {/* Show results toggle button if there are results */}
           {hasResults && (
             <div className="flex justify-center pt-2">

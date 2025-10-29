@@ -1,6 +1,6 @@
 import React from "react"
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneLight, oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 interface CodeBlockProps {
   children: React.ReactNode
@@ -12,7 +12,7 @@ interface CodeBlockProps {
 export const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, ...props }) => {
   const match = /language-(\w+)/.exec(className || '')
   const language = match ? match[1] : 'text'
-  
+
   // Map common language aliases to proper language names
   const languageMap: Record<string, string> = {
     'js': 'javascript',
@@ -62,16 +62,16 @@ export const CodeBlock: React.FC<CodeBlockProps> = ({ children, className, ...pr
     'diff': 'diff',
     'git': 'diff'
   }
-  
+
   const mappedLanguage = languageMap[language] || language
-  
+
   return (
     <div className="relative group mb-6">
       {/* Language label */}
       <div className="absolute top-0 right-0 px-3 py-1 text-xs font-mono text-gray-600 bg-white rounded-bl-xl border-l border-b border-gray-200 z-10 shadow-sm font-medium">
         {mappedLanguage}
       </div>
-      
+
       <SyntaxHighlighter
         style={oneLight}
         language={mappedLanguage}

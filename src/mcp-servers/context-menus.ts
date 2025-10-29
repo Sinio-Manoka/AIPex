@@ -18,7 +18,7 @@ export async function createContextMenuItem(options: {
       contexts: options.contexts || ["all"],
       documentUrlPatterns: options.documentUrlPatterns
     })
-    
+
     return { success: true }
   } catch (error: any) {
     return { success: false, error: error?.message || String(error) }
@@ -79,14 +79,14 @@ export async function removeAllContextMenuItems(): Promise<{
  */
 export async function getContextMenuItems(): Promise<{
   success: boolean
-  items?: chrome.contextMenus.ContextMenuItem[]
+  items?: any[]
   error?: string
 }> {
   try {
     // Note: Chrome doesn't provide a direct API to get all context menu items
     // This is a limitation of the Chrome Extensions API
-    return { 
-      success: true, 
+    return {
+      success: true,
       items: [],
       error: "Chrome Extensions API doesn't provide a way to list context menu items"
     }

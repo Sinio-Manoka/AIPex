@@ -21,17 +21,17 @@ export interface StreamingToolCallProps {
   onStepComplete?: (stepIndex: number) => void
 }
 
-const StreamingToolCall: React.FC<StreamingToolCallProps> = ({ 
-  messageId, 
-  isActive, 
-  onStepComplete 
+const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
+  messageId,
+  isActive,
+  onStepComplete: _onStepComplete
 }) => {
   const { t } = useTranslation()
   const [steps, setSteps] = useState<StreamingToolCallStep[]>([])
   const [currentStep, setCurrentStep] = useState<StreamingToolCallStep | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
   const stepStartTimeRef = useRef<number>(0)
-  const intervalRef = useRef<NodeJS.Timeout>()
+  const intervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Listen for streaming messages
   useEffect(() => {
@@ -45,8 +45,8 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
             const lastStep = prev[prev.length - 1]
             if (lastStep && lastStep.type === 'text') {
               // Update existing text step
-              return prev.map((step, idx) => 
-                idx === prev.length - 1 
+              return prev.map((step, idx) =>
+                idx === prev.length - 1
                   ? { ...step, content: (step.content || '') + message.chunk }
                   : step
               )
@@ -76,7 +76,7 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
                 timestamp: Date.now(),
                 status: 'in-progress'
               })
-              
+
               // Start timer for current step
               intervalRef.current = setInterval(() => {
                 setCurrentStep(prev => prev ? {
@@ -97,9 +97,9 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
               if (intervalRef.current) {
                 clearInterval(intervalRef.current)
               }
-              
+
               setCurrentStep(null)
-              return prev.map((s, idx) => 
+              return prev.map((s, idx) =>
                 idx === prev.length - 1 && s.type === 'tool_call'
                   ? { ...s, status: 'completed', result: step.result }
                   : s
@@ -187,7 +187,7 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
       'failed': 'ring-2 ring-red-300'
     }
 
-    return `${baseColors[type] || 'text-gray-600 bg-gray-50 border-gray-200'} ${statusColors[status || 'completed']}`
+    return `${baseColors[type] || 'text-gray-600 bg-gray-50 border-gray-200'} ${(statusColors as any)[status || 'completed']}`
   }
 
   const formatDuration = (ms: number) => {
@@ -208,15 +208,15 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
             <p className="text-xs text-gray-600">{t("ai.realtimeExecution")}</p>
           </div>
         </div>
-        
+
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="w-8 h-8 rounded-full bg-white border border-blue-200 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-all duration-200"
         >
-          <svg 
-            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`} 
-            fill="none" 
-            stroke="currentColor" 
+          <svg
+            className={`w-4 h-4 text-gray-600 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
             viewBox="0 0 24 24"
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -253,40 +253,38 @@ const StreamingToolCall: React.FC<StreamingToolCallProps> = ({
             >
               <div className="flex items-start">
                 <div className="flex-shrink-0 mr-3">
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm ${
-                    step.status === 'completed' ? 'bg-green-100 text-green-600' :
-                    step.status === 'failed' ? 'bg-red-100 text-red-600' :
-                    step.status === 'in-progress' ? 'bg-blue-100 text-blue-600 animate-pulse' :
-                    'bg-gray-100 text-gray-600'
-                  }`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center text-sm ${step.status === 'completed' ? 'bg-green-100 text-green-600' :
+                      step.status === 'failed' ? 'bg-red-100 text-red-600' :
+                        step.status === 'in-progress' ? 'bg-blue-100 text-blue-600 animate-pulse' :
+                          'bg-gray-100 text-gray-600'
+                    }`}>
                     {step.status === 'completed' ? '✓' :
-                     step.status === 'failed' ? '✗' :
-                     step.status === 'in-progress' ? '⟳' : index + 1}
+                      step.status === 'failed' ? '✗' :
+                        step.status === 'in-progress' ? '⟳' : index + 1}
                   </div>
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center mb-1">
                     <span className="text-lg mr-2">{getStepIcon(step.type)}</span>
                     <span className="text-sm font-medium text-gray-900">
                       {step.type === 'text' ? 'Text Response' :
-                       step.type === 'tool_call' ? `Tool: ${useToolName(step.name || '')}` :
-                       step.type === 'tool_result' ? 'Tool Result' :
-                       step.type === 'thinking' ? 'Thinking' :
-                       step.type === 'planning' ? 'Planning' : 'Step'}
+                        step.type === 'tool_call' ? `Tool: ${useToolName(step.name || '')}` :
+                          step.type === 'tool_result' ? 'Tool Result' :
+                            step.type === 'thinking' ? 'Thinking' :
+                              step.type === 'planning' ? 'Planning' : 'Step'}
                     </span>
                     {step.status && (
-                      <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                        step.status === 'completed' ? 'bg-green-100 text-green-700' :
-                        step.status === 'failed' ? 'bg-red-100 text-red-700' :
-                        step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
+                      <span className={`ml-2 px-2 py-0.5 text-xs rounded-full ${step.status === 'completed' ? 'bg-green-100 text-green-700' :
+                          step.status === 'failed' ? 'bg-red-100 text-red-700' :
+                            step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                              'bg-gray-100 text-gray-700'
+                        }`}>
                         {step.status}
                       </span>
                     )}
                   </div>
-                  
+
                   {step.content && (
                     <div className="text-sm text-gray-700">
                       <MarkdownRenderer content={step.content} />

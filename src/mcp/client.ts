@@ -1275,7 +1275,7 @@ export class BrowserMcpClient {
     return { tools: this.tools }
   }
 
-  async callTool(name: string, args: any, messageId?: string) {
+  async callTool(name: string, args: any, _messageId?: string) {
     // Check host access for tools that interact with web pages
     const hostCheckResult = await this.checkHostAccessForTool(name, args)
     if (!hostCheckResult.allowed) {
