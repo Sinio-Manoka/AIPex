@@ -1,0 +1,8 @@
+{
+    "compose": {
+        "query": "compose a new email"
+    },
+    "inbox": {
+        "query": "check inbox"
+    }
+}

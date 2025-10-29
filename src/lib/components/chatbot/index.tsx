@@ -56,6 +56,7 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { models, SYSTEM_PROMPT } from "./constants";
 import { MessageHandler, type MessageHandlerConfig } from "./message-handler";
 import type { UIMessage } from "./types";
+import { FastCommandButton } from "./fast-command-button";
 import { Action, Actions } from "@/components/ai-elements/actions";
 import { Reasoning, ReasoningContent, ReasoningTrigger } from "@/components/ai-elements/reasoning";
 import { Source, Sources, SourcesContent, SourcesTrigger } from "@/components/ai-elements/sources";
@@ -66,6 +67,129 @@ import type { Language } from "~/lib/i18n/types";
 import { useTheme, type Theme } from "~/lib/hooks/use-theme";
 import { useTabsSync } from "~/lib/hooks/use-tabs-sync";
 import { providerManager, type ProviderWithKey } from "~/lib/services/provider-manager";
+
+// InterCommand types
+interface InterCommand {
+  name: string;
+  query: string;
+}
+
+interface CommandCategory {
+  name: string;
+  children: (CommandCategory | InterCommand)[];
+}
+
+// Function to render command hierarchy
+const renderCommandHierarchy = (
+  categories: (CommandCategory | InterCommand)[],
+  currentPath: string[],
+  onNavigate: (path: string[]) => void,
+  onExecuteCommand: (query: string) => void
+): React.ReactElement[] => {
+  return categories.map((item, index) => {
+    if ('children' in item) {
+      // It's a category
+      return (
+        <CommandItem
+          key={`${item.name}-${index}`}
+          onSelect={() => onNavigate([...currentPath, item.name])}
+          className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground"
+        >
+          <div className="flex items-center justify-between w-full">
+            <div className="flex items-center gap-2">
+              <Icon name="file" size="xs" />
+              <span>{item.name}</span>
+            </div>
+            <Icon name="chevronRight" size="xs" variant="muted" />
+          </div>
+        </CommandItem>
+      );
+    } else {
+      // It's a command
+      return (
+        <CommandItem
+          key={`${item.name}-${index}`}
+          onSelect={() => onExecuteCommand(item.query)}
+          className="cursor-pointer rounded-sm px-2 py-1.5 text-sm aria-selected:bg-accent/50 aria-selected:text-accent-foreground"
+        >
+          <div className="flex items-center gap-2">
+            <Icon name="send" size="xs" />
+            <span>{item.name}</span>
+          </div>
+        </CommandItem>
+      );
+    }
+  });
+};
+
+// Function to get current level items
+const getCurrentLevelItems = (commands: CommandCategory[], path: string[]): (CommandCategory | InterCommand)[] => {
+  if (path.length === 0) {
+    return commands;
+  }
+
+  let current: any = commands;
+  for (const segment of path) {
+    const found = current.find((item: any) => item.name === segment);
+    if (found && 'children' in found) {
+      current = found.children;
+    } else {
+      return [];
+    }
+  }
+  return current;
+};
+
+// Function to read commands folder structure
+const readCommandsStructure = async (): Promise<CommandCategory[]> => {
+  try {
+    // Use Vite's import.meta.glob to dynamically import all JSON files in commands folder
+    const commandModules = import.meta.glob('/commands/**/*.json', { eager: true });
+
+    const buildCommandTree = (modules: Record<string, any>): CommandCategory[] => {
+      const tree: CommandCategory[] = [];
+
+      for (const [path, module] of Object.entries(modules)) {
+        // Remove '/commands/' prefix and '.json' suffix
+        const relativePath = path.replace('/commands/', '').replace('.json', '');
+        const pathParts = relativePath.split('/');
+
+        // Navigate/create the tree structure
+        let currentLevel: (CommandCategory | InterCommand)[] = tree;
+        for (let i = 0; i < pathParts.length - 1; i++) {
+          const part = pathParts[i];
+          let existingCategory = currentLevel.find(item => item.name === part && 'children' in item) as CommandCategory;
+
+          if (!existingCategory) {
+            existingCategory = { name: part, children: [] };
+            currentLevel.push(existingCategory);
+          }
+
+          currentLevel = existingCategory.children;
+        }
+
+        // Add the commands from this JSON file
+        const commands = module.default || module;
+
+        for (const [commandName, commandData] of Object.entries(commands)) {
+          if (typeof commandData === 'object' && commandData !== null && 'query' in commandData) {
+            currentLevel.push({
+              name: commandName,
+              query: (commandData as any).query
+            } as InterCommand);
+          }
+        }
+      }
+
+      return tree;
+    };
+
+    return buildCommandTree(commandModules);
+  } catch (error) {
+    console.error('Error reading commands structure:', error);
+    return [];
+  }
+};
 
 const formatToolOutput = (output: any) => {
   return `
@@ -119,6 +243,18 @@ const ChatBot = () => {
   const [isNewChatButtonHovered, setIsNewChatButtonHovered] = useState(false);
   const [selectedModelName, setSelectedModelName] = useState("");
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [isFastCommandOpen, setIsFastCommandOpen] = useState(false);
+  const [interCommandPath, setInterCommandPath] = useState<string[]>([]);
+  const [interCommands, setInterCommands] = useState<CommandCategory[]>([]);
+
+  // Load InterCommands on mount
+  useEffect(() => {
+    const loadCommands = async () => {
+      const commands = await readCommandsStructure();
+      setInterCommands(commands);
+    };
+    loadCommands();
+  }, []);
 
   // Get current token based on selected provider
   const getCurrentToken = (): string => {
@@ -799,6 +935,11 @@ const ChatBot = () => {
                   </span>
                 </div>
               </Button>
+
+              {/* Fast Command Button */}
+              <FastCommandButton
+                onClick={() => setIsFastCommandOpen(true)}
+              />
             </PromptInputTools>
             <Button
               type="submit"
@@ -1008,6 +1149,57 @@ const ChatBot = () => {
               </CommandItem>
             </CommandGroup>
           )}
+        </CommandList>
+      </CommandDialog>
+
+      {/* Fast Command Dialog */}
+      <CommandDialog open={isFastCommandOpen} onOpenChange={(open) => {
+        setIsFastCommandOpen(open);
+        if (!open) {
+          setInterCommandPath([]);
+        }
+      }}>
+        <CommandInput placeholder="Search commands..." />
+        <CommandList>
+          <CommandEmpty>No commands found.</CommandEmpty>
+
+          <CommandGroup heading={interCommandPath.length > 0 ? interCommandPath[interCommandPath.length - 1] : "Commands"}>
+            {interCommandPath.length > 0 && (
+              <CommandItem
+                onSelect={() => setInterCommandPath(interCommandPath.slice(0, -1))}
+                className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon name="chevronLeft" size="xs" />
+                  <span>Back</span>
+                </div>
+              </CommandItem>
+            )}
+            <CommandItem
+              onSelect={() => setIsFastCommandOpen(false)}
+              className="cursor-pointer rounded-sm px-2 py-1 text-sm aria-selected:bg-accent/30 aria-selected:text-accent-foreground"
+            >
+              <div className="flex items-center gap-2">
+                <Icon name="x" size="xs" />
+                <span>Close</span>
+              </div>
+            </CommandItem>
+            <CommandSeparator className="mb-1 mt-1" />
+          </CommandGroup>
+
+          <CommandGroup heading="">
+            {renderCommandHierarchy(
+              getCurrentLevelItems(interCommands, interCommandPath),
+              interCommandPath,
+              setInterCommandPath,
+              (query: string) => {
+                setIsFastCommandOpen(false);
+                setInterCommandPath([]);
+                // Execute the command by sending it as a message
+                handleSubmit(query);
+              }
+            )}
+          </CommandGroup>
         </CommandList>
       </CommandDialog>
     </div>

@@ -1,0 +1,8 @@
+{
+    "play": {
+        "query": "Play a YouTube video"
+    },
+    "search": {
+        "query": "Search for YouTube videos"
+    }
+}

@@ -24,6 +24,7 @@ export default defineConfig({
           src: 'providers.json',
           dest: '.'
         }
+
       ]
     })
   ],
