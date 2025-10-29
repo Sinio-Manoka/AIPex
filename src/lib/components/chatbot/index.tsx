@@ -570,7 +570,7 @@ const ChatBot = () => {
           onMouseLeave={() => setIsNewChatButtonHovered(false)}
           className="w-8 h-8 border border-border text-muted-foreground hover:text-foreground group"
         >
-          <Icon name="plus" size="sm" variant={isNewChatButtonHovered ? "default" : "muted"} className="transition-transform duration-300 group-hover:rotate-90" />
+          <Icon name="refresh" size="sm" variant={isNewChatButtonHovered ? "default" : "muted"} className="transition-transform duration-300 group-hover:rotate-90" />
         </Button>
       </div>
 
