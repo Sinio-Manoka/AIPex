@@ -1,5 +1,5 @@
 {
-    "mode": "whitelist",
+    "mode": "include-all",
     "whitelist": [
         "localhost"
     ],

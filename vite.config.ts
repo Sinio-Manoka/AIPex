@@ -4,12 +4,18 @@ import { crx } from '@crxjs/vite-plugin'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 import path from 'path'
 import manifest from './manifest.json'
+import firefoxManifest from './manifest.firefox.json'
+import fs from 'fs'
+
+// Detect build target from environment variable
+const isFirefox = process.env.TARGET === 'firefox'
+const selectedManifest = isFirefox ? firefoxManifest : manifest
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
-    crx({ manifest: manifest as any }),
+    crx({ manifest: selectedManifest as any }),
     viteStaticCopy({
       targets: [
         {

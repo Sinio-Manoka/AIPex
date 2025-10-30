@@ -4,7 +4,9 @@ import ReactDOM from "react-dom/client"
 import tailwindCss from "~/tailwind.css?inline"
 
 // Get asset URLs
-const globeUrl = chrome.runtime.getURL("assets/globe.svg")
+import { browserAPI } from "~/lib/browser-api"
+
+const globeUrl = browserAPI.runtime.getURL("assets/globe.svg")
 
 
 const placeholderList = [
@@ -49,7 +51,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
 
   // Get actions
   const fetchActions = () => {
-    chrome.runtime.sendMessage({ request: "get-actions" }, (response) => {
+    browserAPI.runtime.sendMessage({ request: "get-actions" }, (response: any) => {
       if (response && response.actions) {
         setActions(response.actions)
         // Only set filteredActions when there's no input
@@ -60,7 +62,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     })
     
     // Also fetch recent history and add to actions
-    chrome.runtime.sendMessage({ request: "get-history" }, (historyResponse) => {
+    browserAPI.runtime.sendMessage({ request: "get-history" }, (historyResponse: any) => {
       if (historyResponse && historyResponse.history) {
         const historyActions = historyResponse.history.map((item: any) => ({
           ...item,
@@ -102,7 +104,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     
     // Immediately fetch relevant actions based on command
     if (command === "/bookmarks") {
-      chrome.runtime.sendMessage({ request: "get-bookmarks" }, (response) => {
+      browserAPI.runtime.sendMessage({ request: "get-bookmarks" }, (response: any) => {
         if (response && response.bookmarks) {
           const bookmarkActions = response.bookmarks.map((bookmark: any) => ({
             ...bookmark,
@@ -122,7 +124,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
         }
       })
     } else if (command === "/history") {
-      chrome.runtime.sendMessage({ request: "get-history" }, (response) => {
+      browserAPI.runtime.sendMessage({ request: "get-history" }, (response: any) => {
         if (response && response.history) {
           setFilteredActions(response.history.map((item: any) => ({
             ...item,
@@ -131,7 +133,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
         }
       })
     } else if (command === "/group") {
-      chrome.runtime.sendMessage({ request: "get-actions" }, (response) => {
+      browserAPI.runtime.sendMessage({ request: "get-actions" }, (response: any) => {
         if (response && response.actions) {
           const organizeAction = response.actions.find((a: any) => a.action === "organize-tabs")
           const ungroupAction = response.actions.find((a: any) => a.action === "ungroup-tabs")
@@ -202,7 +204,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     } 
     
     if (input.startsWith("/group")) {
-      chrome.runtime.sendMessage({ request: "get-actions" }, (response) => {
+      browserAPI.runtime.sendMessage({ request: "get-actions" }, (response: any) => {
         if (response && response.actions) {
           const organizeAction = response.actions.find((a: any) => a.action === "organize-tabs")
           const ungroupAction = response.actions.find((a: any) => a.action === "ungroup-tabs")
@@ -253,10 +255,10 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     
     if (input.startsWith("/bookmarks")) {
       const tempvalue = input.replace("/bookmarks ", "")
-      chrome.runtime.sendMessage({ 
+      browserAPI.runtime.sendMessage({ 
         request: tempvalue ? "search-bookmarks" : "get-bookmarks", 
         query: tempvalue 
-      }, (response) => {
+      }, (response: any) => {
         if (response && response.bookmarks) {
           const bookmarkActions = response.bookmarks.map((bookmark: any) => ({
             ...bookmark,
@@ -280,10 +282,10 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     
     if (input.startsWith("/history ")) {
       const tempvalue = input.replace("/history ", "")
-      chrome.runtime.sendMessage({ 
+      browserAPI.runtime.sendMessage({ 
         request: "search-history", 
         query: tempvalue 
-      }, (response) => {
+      }, (response: any) => {
         if (response && response.history) {
           setFilteredActions(response.history.map((item: any) => ({
             ...item,
@@ -295,7 +297,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     } 
     
     if (input.startsWith("/tabs")) {
-      chrome.runtime.sendMessage({ request: "get-actions" }, (response) => {
+      browserAPI.runtime.sendMessage({ request: "get-actions" }, (response: any) => {
         if (response && response.actions) {
           const tabActions = response.actions.filter((a: any) => a.type === "tab")
           if (tabActions.length > 0) {
@@ -384,8 +386,8 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
         onClose()
       }
     }
-    chrome.runtime.onMessage.addListener(handleMessage)
-    return () => chrome.runtime.onMessage.removeListener(handleMessage)
+    browserAPI.runtime.onMessage.addListener(handleMessage)
+    return () => browserAPI.runtime.onMessage.removeListener(handleMessage)
   }, [onClose])
 
   // Global shortcut listener (Esc to close)
@@ -393,7 +395,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
         onClose()
-        chrome.runtime.sendMessage({ request: "close-omni" })
+        browserAPI.runtime.sendMessage({ request: "close-omni" })
       }
     }
     document.addEventListener("keydown", onKeyDown)
@@ -406,7 +408,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose()
-        chrome.runtime.sendMessage({ request: "close-omni" })
+        browserAPI.runtime.sendMessage({ request: "close-omni" })
       } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         if (showCommandSuggestions) {
           if (e.key === "ArrowDown") {
@@ -518,8 +520,8 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
     setTimeout(() => setToast(null), 2000)
     // Specific operations
     if (action.action === "ai-chat-user-input") {
-      chrome.storage.local.set({ aipex_user_input: action.desc })
-      chrome.runtime.sendMessage({ request: "open-sidepanel" })
+      browserAPI.storage.local.set({ aipex_user_input: action.desc })
+      browserAPI.runtime.sendMessage({ request: "open-sidepanel" })
       onClose()
       return
     }
@@ -555,7 +557,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
         window.print()
         break
       case "ai-chat":
-        chrome.runtime.sendMessage({ request: "open-sidepanel" })
+        browserAPI.runtime.sendMessage({ request: "open-sidepanel" })
         break
       case "remove-all":
       case "remove-history":
@@ -566,7 +568,7 @@ const Omni = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => 
         // Only show toast
         break
       default:
-        chrome.runtime.sendMessage({ request: action.action, tab: action, query: input })
+        browserAPI.runtime.sendMessage({ request: action.action, tab: action, query: input })
         break
     }
     // Always close the omni window after executing any action
@@ -785,10 +787,10 @@ const ContentApp = () => {
       return false
     }
     
-    chrome.runtime.onMessage.addListener(handleMessage)
+    browserAPI.runtime.onMessage.addListener(handleMessage)
     
     return () => {
-      chrome.runtime.onMessage.removeListener(handleMessage)
+      browserAPI.runtime.onMessage.removeListener(handleMessage)
     }
   }, [])
 
@@ -799,7 +801,7 @@ const ContentApp = () => {
   // }
 
   // const handleOpenAIChat = () => {
-  //   chrome.runtime.sendMessage({ request: "open-sidepanel" })
+  //   browserAPI.runtime.sendMessage({ request: "open-sidepanel" })
   // }
 
   // const handleCloseBotAndShowReopen = () => {

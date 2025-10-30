@@ -390,7 +390,7 @@ export async function getInteractiveElements(): Promise<{
       }
 
       // Remove duplicates and limit to reasonable number
-      const uniqueElements = [...new Set(allElements)].slice(0, 100)
+      const uniqueElements = [...new Set(allElements)]
 
       const interactiveElements: Array<{
         type: string
@@ -1580,8 +1580,8 @@ export async function benchmarkInteractiveElements(): Promise<{
           }
         }
 
-        const uniqueElements = [...new Set(allElements)].slice(0, 100)
-        return uniqueElements.slice(0, 50)
+        const uniqueElements = [...new Set(allElements)]
+        return uniqueElements
       })
 
       const timeReduction = standardResult.executionTime - optimizedResult.executionTime

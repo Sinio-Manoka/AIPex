@@ -1,32 +1,33 @@
 import { Storage } from "~/lib/storage"
 import { providerManager } from "~/lib/services/provider-manager"
+import { browserAPI } from "~/lib/browser-api"
 
 // Asset URLs for extension resources
-const logoNotion = chrome.runtime.getURL("assets/logo-notion.png")
-const logoSheets = chrome.runtime.getURL("assets/logo-sheets.png")
-const logoDocs = chrome.runtime.getURL("assets/logo-docs.png")
-const logoSlides = chrome.runtime.getURL("assets/logo-slides.png")
-const logoForms = chrome.runtime.getURL("assets/logo-forms.png")
-const logoMedium = chrome.runtime.getURL("assets/logo-medium.png")
-const logoGithub = chrome.runtime.getURL("assets/logo-github.png")
-const logoCodepen = chrome.runtime.getURL("assets/logo-codepen.png")
-const logoExcel = chrome.runtime.getURL("assets/logo-excel.png")
-const logoPowerpoint = chrome.runtime.getURL("assets/logo-powerpoint.png")
-const logoWord = chrome.runtime.getURL("assets/logo-word.png")
-const logoFigma = chrome.runtime.getURL("assets/logo-figma.png")
-const logoProducthunt = chrome.runtime.getURL("assets/logo-producthunt.png")
-const logoTwitter = chrome.runtime.getURL("assets/logo-twitter.png")
-const logoSpotify = chrome.runtime.getURL("assets/logo-spotify.png")
-const logoCanva = chrome.runtime.getURL("assets/logo-canva.png")
-const logoAnchor = chrome.runtime.getURL("assets/logo-anchor.png")
-const logoPhotoshop = chrome.runtime.getURL("assets/logo-photoshop.png")
-const logoQr = chrome.runtime.getURL("assets/logo-qr.png")
-const logoAsana = chrome.runtime.getURL("assets/logo-asana.png")
-const logoLinear = chrome.runtime.getURL("assets/logo-linear.png")
-const logoWip = chrome.runtime.getURL("assets/logo-wip.png")
-const logoCalendar = chrome.runtime.getURL("assets/logo-calendar.png")
-const logoKeep = chrome.runtime.getURL("assets/logo-keep.png")
-const logoMeet = chrome.runtime.getURL("assets/logo-meet.png")
+const logoNotion = browserAPI.runtime.getURL("assets/logo-notion.png")
+const logoSheets = browserAPI.runtime.getURL("assets/logo-sheets.png")
+const logoDocs = browserAPI.runtime.getURL("assets/logo-docs.png")
+const logoSlides = browserAPI.runtime.getURL("assets/logo-slides.png")
+const logoForms = browserAPI.runtime.getURL("assets/logo-forms.png")
+const logoMedium = browserAPI.runtime.getURL("assets/logo-medium.png")
+const logoGithub = browserAPI.runtime.getURL("assets/logo-github.png")
+const logoCodepen = browserAPI.runtime.getURL("assets/logo-codepen.png")
+const logoExcel = browserAPI.runtime.getURL("assets/logo-excel.png")
+const logoPowerpoint = browserAPI.runtime.getURL("assets/logo-powerpoint.png")
+const logoWord = browserAPI.runtime.getURL("assets/logo-word.png")
+const logoFigma = browserAPI.runtime.getURL("assets/logo-figma.png")
+const logoProducthunt = browserAPI.runtime.getURL("assets/logo-producthunt.png")
+const logoTwitter = browserAPI.runtime.getURL("assets/logo-twitter.png")
+const logoSpotify = browserAPI.runtime.getURL("assets/logo-spotify.png")
+const logoCanva = browserAPI.runtime.getURL("assets/logo-canva.png")
+const logoAnchor = browserAPI.runtime.getURL("assets/logo-anchor.png")
+const logoPhotoshop = browserAPI.runtime.getURL("assets/logo-photoshop.png")
+const logoQr = browserAPI.runtime.getURL("assets/logo-qr.png")
+const logoAsana = browserAPI.runtime.getURL("assets/logo-asana.png")
+const logoLinear = browserAPI.runtime.getURL("assets/logo-linear.png")
+const logoWip = browserAPI.runtime.getURL("assets/logo-wip.png")
+const logoCalendar = browserAPI.runtime.getURL("assets/logo-calendar.png")
+const logoKeep = browserAPI.runtime.getURL("assets/logo-keep.png")
+const logoMeet = browserAPI.runtime.getURL("assets/logo-meet.png")
 
 // background.ts is responsible for listening to extension-level shortcuts (such as Command/Ctrl+M),
 // and notifies the content script (content.tsx) via chrome.tabs.sendMessage
@@ -130,7 +131,7 @@ function updateTodoList(currentTodos: TodoItem[], newContent: string): TodoItem[
 
 // Get current tab
 const getCurrentTab = async () => {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
+  const [tab] = await browserAPI.tabs.query({ active: true, currentWindow: true })
   return tab
 }
 
@@ -291,34 +292,34 @@ const clearActions = async () => {
 }
 
 // Open on install
-chrome.runtime.onInstalled.addListener((object) => {
+browserAPI.runtime.onInstalled.addListener((object) => {
   // Plasmo/Manifest V3: Cannot directly inject scripts using content_scripts field, need scripting API
   if (object.reason === "install") {
-    chrome.tabs.create({ url: "https://aipex.quest" })
+    browserAPI.tabs.create({ url: "https://aipex.quest" })
   }
 })
 
 // Extension button click
-chrome.action.onClicked.addListener((tab) => {
+browserAPI.action.onClicked.addListener((tab) => {
   if (tab.id) {
     // Open AI Chat sidepanel directly when clicking the toolbar icon
-    chrome.sidePanel.open({ tabId: tab.id })
+    browserAPI.sidePanel.open({ tabId: tab.id })
   }
 })
 
 // Shortcut listener
-chrome.commands.onCommand.addListener((command) => {
+browserAPI.commands.onCommand.addListener((command) => {
   if (command === "open-aipex") {
     getCurrentTab().then((response) => {
       if (!response?.url?.includes("chrome://") && !response?.url?.includes("chrome.google.com")) {
         console.log("open-aipex")
-        chrome.tabs.sendMessage(response.id!, { request: "open-aipex" })
+        browserAPI.tabs.sendMessage(response.id!, { request: "open-aipex" })
       } else {
         // Open a new tab with our custom new tab page
-        chrome.tabs.create({ url: "chrome://newtab" }).then(() => {
+        browserAPI.tabs.create({ url: "chrome://newtab" }).then(() => {
           console.log("open-aipex-new-tab")
           newtaburl = response?.url || ""
-          chrome.tabs.remove(response.id!)
+          browserAPI.tabs.remove(response.id!)
         })
       }
     })
@@ -328,8 +329,8 @@ chrome.commands.onCommand.addListener((command) => {
 // Restore new tab
 const restoreNewTab = () => {
   getCurrentTab().then((response) => {
-    chrome.tabs.create({ url: newtaburl }).then(() => {
-      chrome.tabs.remove(response.id!)
+    browserAPI.tabs.create({ url: newtaburl }).then(() => {
+      browserAPI.tabs.remove(response.id!)
     })
   })
 }
@@ -350,22 +351,22 @@ const resetOmni = async () => {
 }
 
 // Tab updates - only reset actions, no auto-grouping
-chrome.tabs.onUpdated.addListener(async (_tabId, _changeInfo, _tab) => {
+browserAPI.tabs.onUpdated.addListener(async (_tabId, _changeInfo, _tab) => {
   resetOmni()
 })
 
-chrome.tabs.onCreated.addListener(async (_tab) => {
+browserAPI.tabs.onCreated.addListener(async (_tab) => {
   resetOmni()
 })
 
-chrome.tabs.onRemoved.addListener(() => {
+browserAPI.tabs.onRemoved.addListener(() => {
   resetOmni()
   // Don't count tab removals towards the regroup threshold
 })
 
 // Get all tabs
 const getTabs = async () => {
-  const tabs = await chrome.tabs.query({})
+  const tabs = await browserAPI.tabs.query({})
   console.log("getTabs", tabs)
   tabs.forEach((tab) => {
     (tab as any).desc = "Chrome tab"
@@ -378,7 +379,7 @@ const getTabs = async () => {
 
 // Get all history
 const getHistory = async () => {
-  const history = await chrome.history.search({ text: "", maxResults: 1000, startTime: 0 })
+  const history = await browserAPI.history.search({ text: "", maxResults: 1000, startTime: 0 })
   history.forEach((item: any) => {
     actions.push({
       title: item.title || "Untitled",
@@ -395,93 +396,93 @@ const getHistory = async () => {
 
 // Action execution functions
 const switchTab = (tab: any) => {
-  chrome.tabs.highlight({ tabs: tab.index, windowId: tab.windowId })
-  chrome.windows.update(tab.windowId, { focused: true })
+  browserAPI.tabs.highlight({ tabs: tab.index, windowId: tab.windowId })
+  browserAPI.windows.update(tab.windowId, { focused: true })
 }
 const goBack = (tab: any) => {
-  chrome.tabs.goBack(tab.id)
+  browserAPI.tabs.goBack(tab.id)
 }
 const goForward = (tab: any) => {
-  chrome.tabs.goForward(tab.id)
+  browserAPI.tabs.goForward(tab.id)
 }
 const duplicateTab = (_tab: any) => {
   getCurrentTab().then((response) => {
-    chrome.tabs.duplicate(response.id!)
+    browserAPI.tabs.duplicate(response.id!)
   })
 }
 const createBookmark = (_tab: any) => {
   getCurrentTab().then((response) => {
-    chrome.bookmarks.create({ title: response.title, url: response.url })
+    browserAPI.bookmarks.create({ title: response.title, url: response.url })
   })
 }
 const muteTab = (mute: boolean) => {
   getCurrentTab().then((response) => {
-    chrome.tabs.update(response.id!, { muted: mute })
+    browserAPI.tabs.update(response.id!, { muted: mute })
   })
 }
 const reloadTab = () => {
-  chrome.tabs.reload()
+  browserAPI.tabs.reload()
 }
 const pinTab = (pin: boolean) => {
   getCurrentTab().then((response) => {
-    chrome.tabs.update(response.id!, { pinned: pin })
+    browserAPI.tabs.update(response.id!, { pinned: pin })
   })
 }
 const clearAllData = () => {
-  chrome.browsingData.remove({ since: (new Date()).getTime() }, {
+  browserAPI.browsingData.remove({ since: (new Date()).getTime() }, {
     appcache: true, cache: true, cacheStorage: true, cookies: true, downloads: true, fileSystems: true, formData: true, history: true, indexedDB: true, localStorage: true, passwords: true, serviceWorkers: true, webSQL: true
   })
 }
 const clearBrowsingData = () => {
-  chrome.browsingData.removeHistory({ since: 0 })
+  browserAPI.browsingData.removeHistory({ since: 0 })
 }
 const clearCookies = () => {
-  chrome.browsingData.removeCookies({ since: 0 })
+  browserAPI.browsingData.removeCookies({ since: 0 })
 }
 const clearCache = () => {
-  chrome.browsingData.removeCache({ since: 0 })
+  browserAPI.browsingData.removeCache({ since: 0 })
 }
 const clearLocalStorage = () => {
-  chrome.browsingData.removeLocalStorage({ since: 0 })
+  browserAPI.browsingData.removeLocalStorage({ since: 0 })
 }
 const clearPasswords = () => {
-  chrome.browsingData.removePasswords({ since: 0 })
+  browserAPI.browsingData.removePasswords({ since: 0 })
 }
 const openChromeUrl = (url: string) => {
-  chrome.tabs.create({ url: 'chrome://' + url + '/' })
+  browserAPI.tabs.create({ url: 'chrome://' + url + '/' })
 }
 const openIncognito = () => {
-  chrome.windows.create({ incognito: true })
+  browserAPI.windows.create({ incognito: true })
 }
 const closeWindow = (id: number) => {
-  chrome.windows.remove(id)
+  browserAPI.windows.remove(id)
 }
 const closeTab = (tab: any) => {
-  chrome.tabs.remove(tab.id)
+  browserAPI.tabs.remove(tab.id)
 }
 const closeCurrentTab = () => {
   getCurrentTab().then(closeTab)
 }
 const removeBookmark = (bookmark: any) => {
-  chrome.bookmarks.remove(bookmark.id)
+  browserAPI.bookmarks.remove(bookmark.id)
 }
 
 const ungroupAllTabs = async () => {
   try {
     // Get current window
-    const currentWindow = await chrome.windows.getCurrent()
+    const currentWindow = await browserAPI.windows.getCurrent()
 
     // Get all tab groups in the current window
-    const groups = await chrome.tabGroups.query({ windowId: currentWindow.id })
+    const groups = await browserAPI.tabGroups.query({ windowId: currentWindow.id })
 
     if (groups.length === 0) {
       console.log("No tab groups found to ungroup")
       // Notify popup that operation is complete
-      chrome.runtime.sendMessage({
+      browserAPI.runtime.sendMessage({
         request: "ungroup-tabs-complete",
         success: true,
         message: "No tab groups found to ungroup"
-      }).catch(err => {
+      }).catch((err: any) => {
         console.log('Failed to send ungroup completion message:', err)
       });
       return;
@@ -489,22 +490,22 @@ const ungroupAllTabs = async () => {
 
     // For each group, get its tabs and ungroup them
     for (const group of groups) {
-      const tabs = await chrome.tabs.query({ groupId: group.id })
-      const tabIds = tabs.map(tab => tab.id).filter(id => id !== undefined) as number[]
+      const tabs = await browserAPI.tabs.query({ groupId: group.id })
+      const tabIds = tabs.map((tab: any) => tab.id).filter((id: any) => id !== undefined) as number[]
 
       if (tabIds.length > 0) {
-        chrome.tabs.ungroup(tabIds)
+        browserAPI.tabs.ungroup(tabIds)
       }
     }
 
     console.log(`Ungrouped ${groups.length} tab groups`)
 
     // Notify popup that operation completed successfully
-    chrome.runtime.sendMessage({
+    browserAPI.runtime.sendMessage({
       request: "ungroup-tabs-complete",
       success: true,
       message: `Successfully ungrouped ${groups.length} tab groups`
-    }).catch(err => {
+    }).catch((err: any) => {
       console.log('Failed to send ungroup completion message:', err)
     });
 
@@ -512,11 +513,11 @@ const ungroupAllTabs = async () => {
     console.error("Error ungrouping tabs:", error)
 
     // Notify popup that operation failed
-    chrome.runtime.sendMessage({
+    browserAPI.runtime.sendMessage({
       request: "ungroup-tabs-complete",
       success: false,
       message: `Error ungrouping tabs: ${error.message}`
-    }).catch(err => {
+    }).catch((err: any) => {
       console.log('Failed to send ungroup error message:', err)
     });
   }
@@ -729,7 +730,7 @@ async function parseStreamingResponse(response: Response, messageId?: string) {
                       if (!announcedToolCalls.has(toolCallKey)) {
                         announcedToolCalls.add(toolCallKey)
                         console.log('🔍 [DEBUG] Sending tool call from streaming parser:', { name: currentToolCallName, args });
-                        chrome.runtime.sendMessage({
+                        browserAPI.runtime.sendMessage({
                           request: 'ai-chat-tools-step',
                           messageId,
                           step: {
@@ -768,7 +769,7 @@ async function parseStreamingResponse(response: Response, messageId?: string) {
 
               // Send streaming chunk for non-tool-call content
               if (!inToolCallsSection && messageId) {
-                chrome.runtime.sendMessage({
+                browserAPI.runtime.sendMessage({
                   request: 'ai-chat-stream',
                   chunk: delta.content,
                   messageId
@@ -839,7 +840,7 @@ async function parseStreamingResponse(response: Response, messageId?: string) {
           if (!announcedToolCalls.has(toolCallKey)) {
             announcedToolCalls.add(toolCallKey)
             console.log('🔍 [DEBUG] Sending completed tool call from streaming parser:', { name: toolCall.function.name, args });
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: 'ai-chat-tools-step',
               messageId,
               step: {
@@ -1087,7 +1088,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
           if (todoList.length > 0) {
             const completedCount = todoList.filter(t => t.completed).length
             const totalCount = todoList.length
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-tools-step",
               messageId,
               step: {
@@ -1101,11 +1102,11 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
 
           // Don't call parseStreamingResponse again since content is already available
           // Just send completion message
-          chrome.runtime.sendMessage({ request: 'ai-chat-complete', messageId }).catch(() => { })
+          browserAPI.runtime.sendMessage({ request: 'ai-chat-complete', messageId }).catch(() => { })
         } catch (e) {
           // Fallback: send final once if streaming fails
           try {
-            chrome.runtime.sendMessage({ request: 'ai-chat-tools-final', messageId, content })
+            browserAPI.runtime.sendMessage({ request: 'ai-chat-tools-final', messageId, content })
           } catch { }
         }
       }
@@ -1121,7 +1122,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
           if (currentTodos.length > 0) {
             const completedCount = currentTodos.filter(t => t.completed).length
             const totalCount = currentTodos.length
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-tools-step",
               messageId,
               step: {
@@ -1134,7 +1135,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
           }
         }
 
-        chrome.runtime.sendMessage({
+        browserAPI.runtime.sendMessage({
           request: "ai-chat-tools-step",
           messageId,
           step: { type: "think", content: content }
@@ -1168,7 +1169,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
             timestamp: Date.now(),
             status: "completed"
           }
-          chrome.runtime.sendMessage({
+          browserAPI.runtime.sendMessage({
             request: "ai-chat-planning-step",
             messageId,
             step: planningStep
@@ -1241,7 +1242,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
           announcedToolCalls.add(toolCallKey)
           try {
             console.log('🔍 [DEBUG] Sending tool call from execution:', { name, args });
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-tools-step",
               messageId,
               step: { type: "call_tool", name, args }
@@ -1253,7 +1254,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
         if (messageId) {
           try {
             // Add "think" step
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-planning-step",
               messageId,
               step: {
@@ -1265,7 +1266,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
             })
 
             // Add "act" step
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-planning-step",
               messageId,
               step: {
@@ -1309,7 +1310,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
                 try {
                   // Send image data to sidepanel via runtime message
 
-                  await chrome.runtime.sendMessage({
+                  await browserAPI.runtime.sendMessage({
                     request: "ai-chat-image-data",
                     messageId,
                     imageData: imageData,
@@ -1320,9 +1321,9 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
                   console.error('❌ [DEBUG] Failed to send image data to sidepanel:', error)
                   // Fallback: try sending to current tab as well
                   try {
-                    const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+                    const [activeTab] = await browserAPI.tabs.query({ active: true, currentWindow: true })
                     if (activeTab && activeTab.id) {
-                      await chrome.tabs.sendMessage(activeTab.id, {
+                      await browserAPI.tabs.sendMessage(activeTab.id, {
                         request: "ai-chat-image-data",
                         messageId,
                         imageData: imageData,
@@ -1368,7 +1369,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
             }
           })()
           try {
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-tools-step",
               messageId,
               step: { type: "tool_result", name, result: resultString }
@@ -1380,7 +1381,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
         if (messageId) {
           try {
             // Add "observe" step
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-planning-step",
               messageId,
               step: {
@@ -1400,7 +1401,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
             })
 
             // Add "reason" step
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-planning-step",
               messageId,
               step: {
@@ -1412,7 +1413,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
             })
 
             // Update the "act" step to completed
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-planning-step",
               messageId,
               step: {
@@ -1435,7 +1436,7 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
         })
         if (messageId) {
           try {
-            chrome.runtime.sendMessage({
+            browserAPI.runtime.sendMessage({
               request: "ai-chat-tools-step",
               messageId,
               step: { type: "tool_result", name, result: JSON.stringify({ error: err?.message || String(err) }) }
@@ -1460,19 +1461,19 @@ async function runChatWithTools(userMessages: any[], messageId?: string, referen
 
 async function groupTabsByAI() {
   // Get tabs from current window
-  const tabs = await chrome.tabs.query({ currentWindow: true });
+  const tabs = await browserAPI.tabs.query({ currentWindow: true });
 
   // Filter tabs that have a URL
-  const validTabs = tabs.filter(tab => tab.url);
+  const validTabs = tabs.filter((tab: any) => tab.url);
 
   if (validTabs.length === 0) {
     console.log("No valid tabs to group");
     // Notify popup that operation is complete
-    chrome.runtime.sendMessage({
+    browserAPI.runtime.sendMessage({
       request: "organize-tabs-complete",
       success: true,
       message: "No tabs found to organize"
-    }).catch(err => {
+    }).catch((err: any) => {
       console.log('Failed to send organize completion message:', err)
     });
     return;
@@ -1480,13 +1481,13 @@ async function groupTabsByAI() {
 
   try {
     // Get current window's active tab
-    const [activeTab] = await chrome.tabs.query({
+    const [activeTab] = await browserAPI.tabs.query({
       active: true,
       currentWindow: true
     });
 
     // Prepare tab data for AI classification
-    const tabData = validTabs.map(tab => {
+    const tabData = validTabs.map((tab: any) => {
       let hostname = "";
       try {
         hostname = tab.url ? new URL(tab.url).hostname : "";
@@ -1536,37 +1537,37 @@ Example response format:
 
       // Filter out any invalid tab IDs
       const validTabIds = tabIds.filter((id: number) =>
-        validTabs.some(tab => tab.id === id)
+        validTabs.some((tab: any) => tab.id === id)
       );
 
       if (validTabIds.length === 0) continue;
 
       // Get all existing groups in the current window
-      const groups = await chrome.tabGroups.query({
+      const groups = await browserAPI.tabGroups.query({
         windowId: validTabs[0].windowId,
       });
 
       // Find existing group with the same name
-      const existingGroup = groups.find(g => g.title === groupName);
+      const existingGroup = groups.find((g: any) => g.title === groupName);
 
       if (existingGroup) {
         // Add tabs to existing group
-        chrome.tabs.group({
+        browserAPI.tabs.group({
           tabIds: validTabIds,
           groupId: existingGroup.id,
-        }, (groupId) => {
-          if (chrome.runtime.lastError) {
-            console.error(`Failed to add to existing group "${groupName}":`, chrome.runtime.lastError);
+        }, (groupId: any) => {
+          if (browserAPI.runtime.lastError) {
+            console.error(`Failed to add to existing group "${groupName}":`, browserAPI.runtime.lastError);
           } else {
             console.log(`Tabs added to existing group "${groupName}"`);
 
             // Set collapsed state based on whether it contains the active tab
             const containsActiveTab = validTabIds.includes(activeTab?.id || -1);
-            chrome.tabGroups.update(groupId, {
+            browserAPI.tabGroups.update(groupId, {
               collapsed: !containsActiveTab,
             }, () => {
-              if (chrome.runtime.lastError) {
-                console.error(`Failed to set group "${groupName}" collapse state:`, chrome.runtime.lastError);
+              if (browserAPI.runtime.lastError) {
+                console.error(`Failed to set group "${groupName}" collapse state:`, browserAPI.runtime.lastError);
               } else {
                 console.log(`Group "${groupName}" collapsed state set to ${!containsActiveTab}`);
               }
@@ -1578,22 +1579,22 @@ Example response format:
         console.log({
           tabIds: validTabIds,
         })
-        chrome.tabs.group({
+        browserAPI.tabs.group({
           createProperties: { windowId: validTabs[0].windowId },
           tabIds: validTabIds,
-        }, (groupId) => {
-          if (chrome.runtime.lastError) {
-            console.error(`Failed to create new group "${groupName}":`, chrome.runtime.lastError);
+        }, (groupId: any) => {
+          if (browserAPI.runtime.lastError) {
+            console.error(`Failed to create new group "${groupName}":`, browserAPI.runtime.lastError);
           } else {
             console.log(`Group created successfully! Group ID: ${groupId}, Group name: ${groupName}`);
 
             // Set group title and color
-            chrome.tabGroups.update(groupId, {
+            browserAPI.tabGroups.update(groupId, {
               title: groupName,
               color: "green"
             }, () => {
-              if (chrome.runtime.lastError) {
-                console.error(`Failed to update group "${groupName}" title:`, chrome.runtime.lastError);
+              if (browserAPI.runtime.lastError) {
+                console.error(`Failed to update group "${groupName}" title:`, browserAPI.runtime.lastError);
               } else {
                 console.log(`Group "${groupName}" title and color set successfully`);
               }
@@ -1601,11 +1602,11 @@ Example response format:
 
             // Set collapsed state based on whether it contains the active tab
             const containsActiveTab = validTabIds.includes(activeTab?.id || -1);
-            chrome.tabGroups.update(groupId, {
+            browserAPI.tabGroups.update(groupId, {
               collapsed: !containsActiveTab,
             }, () => {
-              if (chrome.runtime.lastError) {
-                console.error(`Failed to set group "${groupName}" collapse state:`, chrome.runtime.lastError);
+              if (browserAPI.runtime.lastError) {
+                console.error(`Failed to set group "${groupName}" collapse state:`, browserAPI.runtime.lastError);
               } else {
                 console.log(`Group "${groupName}" collapsed state set to ${!containsActiveTab}`);
               }
@@ -1618,11 +1619,11 @@ Example response format:
     }
 
     // Notify popup that operation completed successfully
-    chrome.runtime.sendMessage({
+    browserAPI.runtime.sendMessage({
       request: "organize-tabs-complete",
       success: true,
       message: `Successfully organized ${validTabs.length} tabs into ${groupingResult.length} groups`
-    }).catch(err => {
+    }).catch((err: any) => {
       console.log('Failed to send organize completion message:', err)
     });
 
@@ -1630,11 +1631,11 @@ Example response format:
     console.error("Error in AI tab grouping:", error);
 
     // Notify popup that operation failed
-    chrome.runtime.sendMessage({
+    browserAPI.runtime.sendMessage({
       request: "organize-tabs-complete",
       success: false,
       message: `Error organizing tabs: ${error.message}`
-    }).catch(err => {
+    }).catch((err: any) => {
       console.log('Failed to send organize error message:', err)
     });
   }
@@ -1730,10 +1731,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         console.log("Background: Received mcp-get-all-tabs request")
         console.log("Background: Current tabs:")
         try {
-          const tabs = await chrome.tabs.query({})
+          const tabs = await browserAPI.tabs.query({})
           const simplified = tabs
-            .filter((t) => typeof t.id === "number")
-            .map((t) => ({
+            .filter((t: any) => typeof t.id === "number")
+            .map((t: any) => ({
               id: t.id,
               index: t.index,
               windowId: t.windowId,
@@ -1774,13 +1775,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
               sendResponse({ success: false, error: "Invalid tabId" })
               return
             }
-            const tab = await chrome.tabs.get(tabId)
+            const tab = await browserAPI.tabs.get(tabId)
             if (!tab || typeof tab.index !== "number" || typeof tab.windowId !== "number") {
               sendResponse({ success: false, error: "Tab not found" })
               return
             }
-            await chrome.tabs.highlight({ tabs: tab.index, windowId: tab.windowId })
-            await chrome.windows.update(tab.windowId, { focused: true })
+            await browserAPI.tabs.highlight({ tabs: tab.index, windowId: tab.windowId })
+            await browserAPI.windows.update(tab.windowId, { focused: true })
             sendResponse({ success: true })
           } catch (err: any) {
             sendResponse({ success: false, error: err?.message || String(err) })
@@ -1788,7 +1789,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })()
       return true
     case "search-history":
-      chrome.history.search({ text: message.query, maxResults: 0, startTime: 0 }).then((data) => {
+      browserAPI.history.search({ text: message.query, maxResults: 0, startTime: 0 }).then((data: any) => {
         data.forEach((action: any) => {
           action.type = "history"
           action.emoji = true
@@ -1800,7 +1801,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       })
       return true
     case "search-bookmarks":
-      chrome.bookmarks.search({ query: message.query }).then((data) => {
+      browserAPI.bookmarks.search({ query: message.query }).then((data: any) => {
         data = data.filter((x: any) => x.url)
         data.forEach((action: any) => {
           action.type = "bookmark"
@@ -1814,7 +1815,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return true
     case "get-bookmarks":
       console.log("Background: Handling get-bookmarks request")
-      chrome.bookmarks.getRecent(100).then((data) => {
+      browserAPI.bookmarks.getRecent(100).then((data: any) => {
         console.log("Background: Raw bookmarks data:", data)
         data = data.filter((x: any) => x.url)
         console.log("Background: Filtered bookmarks (with URLs only):", data)
@@ -1828,14 +1829,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })
         console.log("Background: Processed bookmarks data:", data)
         sendResponse({ bookmarks: data })
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error("Background: Error getting bookmarks:", error)
         sendResponse({ bookmarks: [], error: error.message })
       })
       return true
     case "get-history":
       console.log("Background: Handling get-history request")
-      chrome.history.search({ text: "", maxResults: 1000, startTime: 0 }).then((data) => {
+      browserAPI.history.search({ text: "", maxResults: 1000, startTime: 0 }).then((data: any) => {
         console.log("Background: Raw history data:", data)
         data.forEach((action: any) => {
           action.type = "history"
@@ -1847,7 +1848,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         })
         console.log("Background: Processed history data:", data)
         sendResponse({ history: data })
-      }).catch(error => {
+      }).catch((error: any) => {
         console.error("Background: Error getting history:", error)
         sendResponse({ history: [], error: error.message })
       })
@@ -1867,12 +1868,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       break
     case "close-omni":
       getCurrentTab().then((response) => {
-        chrome.tabs.sendMessage(response.id!, { request: "close-omni" })
+        browserAPI.tabs.sendMessage(response.id!, { request: "close-omni" })
       })
       break
     case "open-sidepanel":
       // Open the sidepanel for all pages, including newtab
-      chrome.sidePanel.open({ tabId: sender.tab?.id || 0 })
+      browserAPI.openPanel(sender.tab?.id || 0)
 
       // If there's selected text, store it temporarily
       if (message.selectedText) {
@@ -2017,8 +2018,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         try {
           const { messages, folderPrefix } = message
 
-          // Check if chrome.downloads is available
-          if (!chrome.downloads) {
+          // Check if browserAPI.downloads is available
+          if (!browserAPI.downloads) {
             sendResponse({
               success: false,
               error: "Downloads permission not available"
@@ -2050,7 +2051,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           // Send message to sidepanel to get current chat images
           try {
             console.log('📤 [DEBUG] Sending message to sidepanel...')
-            const sidepanelResponse = await chrome.runtime.sendMessage({
+            const sidepanelResponse = await browserAPI.runtime.sendMessage({
               request: "provide-current-chat-images",
               folderPrefix: folderPrefix
             })
@@ -2078,10 +2079,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             console.log('⚠️ [DEBUG] Sidepanel failed, trying active tab fallback...')
             // Fallback: try to get images from active tab
             try {
-              const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+              const [activeTab] = await browserAPI.tabs.query({ active: true, currentWindow: true })
               if (activeTab && activeTab.id) {
                 console.log('📤 [DEBUG] Sending message to active tab:', activeTab.id)
-                const tabResponse = await chrome.tabs.sendMessage(activeTab.id, {
+                const tabResponse = await browserAPI.tabs.sendMessage(activeTab.id, {
                   request: "provide-current-chat-images",
                   folderPrefix: folderPrefix
                 })
@@ -2142,7 +2143,7 @@ async function downloadImageInBackground(
 }> {
   try {
     // Check if downloads permission is available
-    if (!chrome.downloads) {
+    if (!browserAPI.downloads) {
       return {
         success: false,
         error: "Downloads permission not available. Please check extension permissions."
@@ -2178,7 +2179,7 @@ async function downloadImageInBackground(
     const imageFilename = finalFilename.includes('.') ? finalFilename : `${finalFilename}.${extension}`
 
     // Download the file using the data URI directly
-    const downloadId = await chrome.downloads.download({
+    const downloadId = await browserAPI.downloads.download({
       url: imageData,
       filename: imageFilename,
       saveAs: true // This will show the save dialog
@@ -2217,7 +2218,7 @@ async function downloadChatImagesInBackground(
 }> {
   try {
     // Check if downloads permission is available
-    if (!chrome.downloads) {
+    if (!browserAPI.downloads) {
       return {
         success: false,
         errors: ["Downloads permission not available. Please check extension permissions."]
@@ -2305,7 +2306,7 @@ async function downloadChatImagesInBackground(
     // Try to get images from sidepanel first
     try {
       console.log('📤 [DEBUG] Sending message to sidepanel...')
-      const sidepanelResponse = await chrome.runtime.sendMessage({
+      const sidepanelResponse = await browserAPI.runtime.sendMessage({
         request: "provide-current-chat-images",
         folderPrefix: folderPrefix,
         imageNames: imageNames,
@@ -2337,10 +2338,10 @@ async function downloadChatImagesInBackground(
 
     // Fallback: try to get images from active tab
     try {
-      const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true })
+      const [activeTab] = await browserAPI.tabs.query({ active: true, currentWindow: true })
       if (activeTab && activeTab.id) {
         console.log('📤 [DEBUG] Sending message to active tab:', activeTab.id)
-        const tabResponse = await chrome.tabs.sendMessage(activeTab.id, {
+        const tabResponse = await browserAPI.tabs.sendMessage(activeTab.id, {
           request: "provide-current-chat-images",
           folderPrefix: folderPrefix,
           imageNames: imageNames,
@@ -2388,3 +2389,9 @@ async function downloadChatImagesInBackground(
 
 // Initialize actions
 resetOmni()
+
+// Browser action click handler (for Firefox extension icon clicks)
+browserAPI.action.onClicked.addListener((tab: any) => {
+  console.log("Browser action clicked, opening sidebar")
+  browserAPI.openPanel(tab?.id || 0)
+})

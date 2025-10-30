@@ -13,7 +13,9 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "TARGET=chrome vite build",
+    "build:firefox": "TARGET=firefox vite build",
+    "build:all": "npm run build && npm run build:firefox",
     "preview": "vite preview",
     "build:css": "npx tailwindcss -i ./src/tailwind.css -o ./src/style.css --minify"
   },
