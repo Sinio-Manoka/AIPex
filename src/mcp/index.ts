@@ -127,6 +127,13 @@ export type McpToolName =
   | "capture_screenshot_to_clipboard"
   | "read_clipboard_image"
   | "get_clipboard_image_info"
+  // Confluence tools
+  | "confluence_search"
+  | "confluence_get_page"
+  | "confluence_get_page_children"
+  | "confluence_get_comments"
+  | "confluence_get_labels"
+  | "confluence_search_user"
 
 export type McpRequest =
   | { tool: "get_all_tabs" }
@@ -257,6 +264,13 @@ export type McpRequest =
   | { tool: "capture_screenshot_to_clipboard" }
   | { tool: "read_clipboard_image" }
   | { tool: "get_clipboard_image_info" }
+  // Confluence tools
+  | { tool: "confluence_search"; args: { query: string; limit?: number; spaces_filter?: string } }
+  | { tool: "confluence_get_page"; args: { page_id?: string; title?: string; space_key?: string; include_metadata?: boolean; convert_to_markdown?: boolean } }
+  | { tool: "confluence_get_page_children"; args: { parent_id: string; expand?: string; limit?: number; include_content?: boolean; convert_to_markdown?: boolean; start?: number } }
+  | { tool: "confluence_get_comments"; args: { page_id: string } }
+  | { tool: "confluence_get_labels"; args: { page_id: string } }
+  | { tool: "confluence_search_user"; args: { query: string; limit?: number } }
 
 export type McpResponse =
   | { success: true; data?: any }
@@ -390,7 +404,14 @@ import {
   captureTabScreenshot,
   captureScreenshotToClipboard,
   readClipboardImage,
-  getClipboardImageInfo
+  getClipboardImageInfo,
+  // Confluence tools
+  confluenceSearch,
+  confluenceGetPage,
+  confluenceGetPageChildren,
+  confluenceGetComments,
+  confluenceGetLabels,
+  confluenceSearchUser
 } from "~/mcp-servers"
 
 export async function callMcpTool(request: McpRequest): Promise<McpResponse> {
@@ -1108,6 +1129,42 @@ export async function callMcpTool(request: McpRequest): Promise<McpResponse> {
       case "get_clipboard_image_info": {
         const result = await getClipboardImageInfo()
         return result.success ? { success: true, data: { hasImage: result.hasImage, imageType: result.imageType } } : { success: false, error: result.error || "Failed to get clipboard image info" }
+      }
+      // Confluence tools
+      case "confluence_search": {
+        const { query, limit, spaces_filter } = request.args
+        if (!query) return { success: false, error: "Query is required" }
+        const result = await confluenceSearch(query, limit, spaces_filter)
+        return { success: true, data: result }
+      }
+      case "confluence_get_page": {
+        const { page_id, title, space_key, include_metadata, convert_to_markdown } = request.args
+        const result = await confluenceGetPage(page_id, title, space_key, include_metadata, convert_to_markdown)
+        return { success: true, data: result }
+      }
+      case "confluence_get_page_children": {
+        const { parent_id, expand, limit, include_content, convert_to_markdown, start } = request.args
+        if (!parent_id) return { success: false, error: "Parent ID is required" }
+        const result = await confluenceGetPageChildren(parent_id, expand, limit, include_content, convert_to_markdown, start)
+        return { success: true, data: result }
+      }
+      case "confluence_get_comments": {
+        const { page_id } = request.args
+        if (!page_id) return { success: false, error: "Page ID is required" }
+        const result = await confluenceGetComments(page_id)
+        return { success: true, data: result }
+      }
+      case "confluence_get_labels": {
+        const { page_id } = request.args
+        if (!page_id) return { success: false, error: "Page ID is required" }
+        const result = await confluenceGetLabels(page_id)
+        return { success: true, data: result }
+      }
+      case "confluence_search_user": {
+        const { query, limit } = request.args
+        if (!query) return { success: false, error: "Query is required" }
+        const result = await confluenceSearchUser(query, limit)
+        return { success: true, data: result }
       }
       default:
         return { success: false, error: "Unsupported tool" }

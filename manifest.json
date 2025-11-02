@@ -65,7 +65,8 @@
     "sidePanel",
     "management",
     "downloads",
-    "tabCapture"
+    "tabCapture",
+    "identity"
   ]
 }
 

@@ -1,0 +1,22 @@
+{
+  "mcpTools": [
+    {
+      "name": "confluence",
+      "host": "http://localhost:9000/mcp",
+      "headers": {
+        "Authorization": "",
+        "X-Atlassian-Cloud-Id": "https://<your-cloud-id>.atlassian.net/wiki",
+        "Content-Type": "application/json"
+      },
+      "enabled": true,
+      "description": "Confluence MCP server for document management"
+    }
+  ],
+  "defaultTimeout": 30000,
+  "retryAttempts": 3,
+  "_instructions": {
+    "setup": "Credentials configured for Intershop Atlassian instance",
+    "encoding": "Base64 encoded email:token for Basic auth",
+    "cloud_id": "Intershop Atlassian Cloud ID configured"
+  }
+}

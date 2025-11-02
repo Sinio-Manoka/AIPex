@@ -442,3 +442,142 @@ export async function checkPermissions(): Promise<{
     }
   }
 }
+
+
+
+// Confluence tools - placeholder implementations
+// These would need to be implemented with actual Confluence API calls
+
+import { mcpToolsManager } from "~/lib/services/mcp-tools-manager";
+
+/**
+ * Search Confluence content
+ */
+export async function confluenceSearch(query: string, limit?: number, spaces_filter?: string): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_search',
+      arguments: {
+        query,
+        limit,
+        spaces_filter
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to search Confluence: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
+ * Get Confluence page content
+ */
+export async function confluenceGetPage(page_id?: string, title?: string, space_key?: string, include_metadata?: boolean, convert_to_markdown?: boolean): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_get_page',
+      arguments: {
+        page_id,
+        title,
+        space_key,
+        include_metadata,
+        convert_to_markdown
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to get Confluence page: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
+ * Get Confluence page children
+ */
+export async function confluenceGetPageChildren(parent_id: string, expand?: string, limit?: number, include_content?: boolean, convert_to_markdown?: boolean, start?: number): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_get_page_children',
+      arguments: {
+        parent_id,
+        expand,
+        limit,
+        include_content,
+        convert_to_markdown,
+        start
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to get Confluence page children: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
+ * Get Confluence page comments
+ */
+export async function confluenceGetComments(page_id: string): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_get_comments',
+      arguments: {
+        page_id
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to get Confluence comments: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
+ * Get Confluence page labels
+ */
+export async function confluenceGetLabels(page_id: string): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_get_labels',
+      arguments: {
+        page_id
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to get Confluence labels: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}
+
+/**
+ * Search Confluence users
+ */
+export async function confluenceSearchUser(query: string, limit?: number): Promise<any> {
+  try {
+    const result = await mcpToolsManager.makeMcpRequest('confluence', 'tools/call', {
+      name: 'confluence_search_user',
+      arguments: {
+        query,
+        limit
+      }
+    });
+    return result;
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to search Confluence users: ${error instanceof Error ? error.message : String(error)}`
+    };
+  }
+}

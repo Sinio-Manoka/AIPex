@@ -1,5 +1,6 @@
 import { Storage } from "~/lib/storage"
 import { providerManager } from "~/lib/services/provider-manager"
+import { mcpToolsManager } from "~/lib/services/mcp-tools-manager"
 import { browserAPI } from "~/lib/browser-api"
 
 // Asset URLs for extension resources

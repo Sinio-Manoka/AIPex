@@ -1263,6 +1263,160 @@ export class BrowserMcpClient {
         },
         required: []
       }
+    },
+    // Confluence tools
+    {
+      name: "confluence_search",
+      description: "Search Confluence content using simple terms or CQL.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search query - can be simple text or a CQL query string."
+          },
+          limit: {
+            type: "integer",
+            description: "Maximum number of results (1-50).",
+            default: 10,
+            minimum: 1,
+            maximum: 50
+          },
+          spaces_filter: {
+            type: "string",
+            description: "(Optional) Comma-separated list of space keys to filter results by."
+          }
+        },
+        required: ["query"]
+      }
+    },
+    {
+      name: "confluence_get_page",
+      description: "Get content of a specific Confluence page by its ID, or by its title and space key.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          page_id: {
+            type: "string",
+            description: "Confluence page ID. If provided, 'title' and 'space_key' are ignored."
+          },
+          title: {
+            type: "string",
+            description: "The exact title of the page. Must be used with 'space_key'."
+          },
+          space_key: {
+            type: "string",
+            description: "The key of the space. Must be used with 'title'."
+          },
+          include_metadata: {
+            type: "boolean",
+            description: "Whether to include page metadata.",
+            default: true
+          },
+          convert_to_markdown: {
+            type: "boolean",
+            description: "Convert content to markdown (true) or keep raw HTML (false).",
+            default: true
+          }
+        }
+      }
+    },
+    {
+      name: "confluence_get_page_children",
+      description: "Get child pages of a specific Confluence page.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          parent_id: {
+            type: "string",
+            description: "The ID of the parent page whose children you want to retrieve"
+          },
+          expand: {
+            type: "string",
+            description: "Fields to expand in the response (e.g., 'version', 'body.storage').",
+            default: "version"
+          },
+          limit: {
+            type: "integer",
+            description: "Maximum number of child pages to return (1-50)",
+            default: 25,
+            minimum: 1,
+            maximum: 50
+          },
+          include_content: {
+            type: "boolean",
+            description: "Whether to include the page content in the response",
+            default: false
+          },
+          convert_to_markdown: {
+            type: "boolean",
+            description: "Whether to convert page content to markdown (true) or keep it in raw HTML format (false). Only relevant if include_content is true.",
+            default: true
+          },
+          start: {
+            type: "integer",
+            description: "Starting index for pagination (0-based)",
+            default: 0,
+            minimum: 0
+          }
+        },
+        required: ["parent_id"]
+      }
+    },
+    {
+      name: "confluence_get_comments",
+      description: "Get comments for a specific Confluence page.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          page_id: {
+            type: "string",
+            description: "Confluence page ID"
+          }
+        },
+        required: ["page_id"]
+      }
+    },
+    {
+      name: "confluence_get_labels",
+      description: "Get labels for a specific Confluence page.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          page_id: {
+            type: "string",
+            description: "Confluence page ID"
+          }
+        },
+        required: ["page_id"]
+      }
+    },
+    {
+      name: "confluence_search_user",
+      description: "Search Confluence users using CQL.",
+      action: false,
+      inputSchema: {
+        type: "object",
+        properties: {
+          query: {
+            type: "string",
+            description: "Search query - a CQL query string for user search"
+          },
+          limit: {
+            type: "integer",
+            description: "Maximum number of results (1-50)",
+            default: 10,
+            minimum: 1,
+            maximum: 50
+          }
+        },
+        required: ["query"]
+      }
     }
   ]
 
