@@ -1227,16 +1227,6 @@ export async function highlightElement(selector: string, options?: {
         const autoColor = getOptimalHighlightColor(element)
         const highlightColor = options.color || autoColor // Use auto-detected color if none specified
 
-        // Debug info for color selection
-        const elementColors = getElementColors(element)
-        console.log('AIPex Color Detection:', {
-          element: element.tagName + (element.className ? '.' + element.className : ''),
-          detectedBackground: elementColors.background,
-          detectedText: elementColors.text,
-          selectedHighlight: highlightColor,
-          userSpecified: !!options.color
-        })
-
         // Create unique highlight ID
         const highlightId = `aipex-highlight-${Date.now()}`
         element.setAttribute('data-highlight-id', highlightId)

@@ -66,7 +66,7 @@ import { useTranslation, useLanguageChanger } from "~/lib/i18n/hooks";
 import type { Language } from "~/lib/i18n/types";
 import { useTheme, type Theme } from "~/lib/hooks/use-theme";
 import { useTabsSync } from "~/lib/hooks/use-tabs-sync";
-import { providerManager } from "~/lib/services/provider-manager"
+import { providerManager, ProviderWithKey } from "~/lib/services/provider-manager"
 import { mcpToolsManager } from "~/lib/services/mcp-tools-manager"
 
 // InterCommand types
